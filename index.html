@@ -7,231 +7,205 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg-top: #180729;
-  --bg-bottom: #010007;
-  --text: #F3F2F7;
-  --muted: #cfcfcfcf;
+  --bg-top:#180729; --bg-bottom:#010007; --text:#F3F2F7; --muted:#cfcfcfcf;
 
-  /* ===== h1 / hero ===== */
+  /* h1 / hero */
   --h1-size: clamp(26px, 6vw, 60px);
   --h1-weight: 600;
   --hero-box-height: 245px;
-  --hero-pad-top: 65px;
-  --hero-pad-right: 20px;
-  --hero-pad-bottom: 0px;
-  --hero-pad-left: 20px;
-  --h1-fade-in: 550ms;
-  --h1-fade-out: 550ms;
+  --hero-pad-top: 65px; --hero-pad-right: 20px; --hero-pad-bottom: 0px; --hero-pad-left: 20px;
+  --h1-fade-in: 550ms; --h1-fade-out: 550ms;
 
-  /* ===== остальной UI ===== */
-  --pill-bg: #2b2b2b;
-  --pill-color-label: #C6C6C6;
-  --pill-color-time: #BFBFBF;
-  --pill-padding-v: clamp(10px, 1.2vw, 14px);
-  --pill-padding-h: clamp(16px, 2vw, 22px);
-  --pill-radius: 10px;
-  --pill-width: min(92vw, 350px);
-  --pill-font-label: clamp(12px, 1.6vw, 12px);
-  --pill-font-time: clamp(11px, 2.2vw, 11px);
+  /* UI */
+  --pill-bg:#2b2b2b; --pill-color-label:#C6C6C6; --pill-color-time:#BFBFBF;
+  --pill-padding-v:clamp(10px,1.2vw,14px); --pill-padding-h:clamp(16px,2vw,22px);
+  --pill-radius:10px; --pill-width:min(92vw,350px);
+  --pill-font-label:clamp(12px,1.6vw,12px); --pill-font-time:clamp(11px,2.2vw,11px);
 
-  --overlay-bg: rgba(7,6,8,0.55);
-  --overlay-blur: 8px;
-  --overlay-z: 1200;
+  --overlay-bg:rgba(7,6,8,0.55);
+  --overlay-blur:8px; --overlay-z:1200;
 
-  --sheet-open-duration: 260ms;
-  --sheet-close-duration: 220ms;
-  --sheet-ease: cubic-bezier(.22,1,.36,1);
+  /* быстрее и ровнее */
+  --sheet-open-duration: 200ms;
+  --sheet-close-duration: 170ms;
+  --sheet-ease: cubic-bezier(.2,.9,.2,1);
   --sheet-height: 100svh;
   --sheet-max-width: 700px;
   --sheet-side-padding: clamp(16px, 3.2vw, 40px);
   --sheet-top-padding: clamp(16px, 3.2vw, 36px);
 
-  /* БАЗОВЫЙ радиус и «текущий» радиус, которым реально рисуем */
+  /* радиусы: базовый и текущий (динамический) */
   --sheet-radius-top: clamp(12px, 2vw, 22px);
   --sheet-radius-current: var(--sheet-radius-top);
 
-  --player-bg: rgba(33, 33, 33, 0.7); backdrop-filter: blur(4px);
-  --player-color: var(--text);
-  --player-shadow: 0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
-  --player-border: 0px solid transparent;
+  --player-bg:rgba(33, 33, 33, 0.7); backdrop-filter: blur(4px);
+  --player-color:var(--text);
+  --player-shadow:0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
+  --player-border:0px solid transparent;
 
-  --title-color: #FFFFFF;
-  --title-size: clamp(18px, 2.4vw, 28px);
-  --title-weight: 800;
-  --author-color: #BDBDBD;
-  --author-size: clamp(14px, 1.8vw, 18px);
-  --author-weight: 700;
-  --cover-size-player: clamp(250px, 32vw, 280px);
-  --cover-radius-player: clamp(10px, 1.4vw, 16px);
-  --cover-bg: #C4C4C4;
+  --title-color:#FFF; --title-size:clamp(18px, 2.4vw, 28px); --title-weight:800;
+  --author-color:#BDBDBD; --author-size:clamp(14px,1.8vw,18px); --author-weight:700;
+  --cover-size-player:clamp(250px,32vw,280px); --cover-radius-player:clamp(10px,1.4vw,16px);
+  --cover-bg:#C4C4C4;
 
-  --btn-bg: #FFFFFF;
-  --btn-fg: #C4C4C4;
-  --btn-size: clamp(45px, 6vw, 60px);
-  --btn-size-main: clamp(52px, 7vw, 64px);
-  --btn-radius: 999px;
-  --btn-shadow: 0 1px 22px rgba(0,0,0,.45);
-  --controls-gap: clamp(34px, 2vw, 40px);
-  --controls-offset-y: clamp(65px, 2vw, 20px);
-  --controls-offset-bottom: 6px;
+  /* размеры кнопок */
+  --btn-size:clamp(39px,6vw,50px);
+  --btn-size-main:clamp(61px,7vw,73px);
+  --controls-gap:clamp(34px,2vw,40px); --controls-offset-y:clamp(65px,2vw,20px); --controls-offset-bottom:6px;
 
-  --progress-height: clamp(5px, 0.8vw, 6px);
-  --progress-radius: 999px;
-  --progress-bg: rgba(255,255,255,0.14);
-  --progress-fill: #FFFFFF;
-  --marker-size: clamp(10px, 1.4vw, 16px);
-  --marker-color: #FFFFFF;
-  --time-color: #BEBEBE;
-  --time-font: clamp(12px, 1.4vw, 14px);
-  --progress-w-min: 305px;
-  --progress-w-ideal: 60vw;
-  --progress-w-max: 475px;
-  --progress-width: clamp(var(--progress-w-min), var(--progress-w-ideal), var(--progress-w-max));
-  --cover-top-min: 24px;
-  --cover-top-ideal: 8vh;
-  --cover-top-max: 120px;
-  --cover-top: clamp(var(--cover-top-min), var(--cover-top-ideal), var(--cover-top-max));
+  --progress-height:5px; --progress-radius:999px;
+  --progress-bg:rgba(255,255,255,.14); --progress-fill:#FFF;
+  --marker-size:clamp(10px,1.4vw,14px); --marker-color:#FFF; --time-color:#BEBEBE; --time-font:clamp(12px,1.4vw,14px);
+  --progress-w-min:305px; --progress-w-ideal:60vw; --progress-w-max:475px;
+  --progress-width:clamp(var(--progress-w-min),var(--progress-w-ideal),var(--progress-w-max));
+  --cover-top-min:24px; --cover-top-ideal:8vh; --cover-top-max:120px;
+  --cover-top:clamp(var(--cover-top-min), var(--cover-top-ideal), var(--cover-top-max));
 
-  /* ===== масштаб карточки трека ===== */
-  --track-scale-px: 70;
-  --track-card-width: min(96vw, 700px);
-  --cover-size-base: 72px;
-  --cover-radius-base: 12px;
-  --track-gap-base: 14px;
-  --track-spacing-base: 12px;
-  --track-pad-v-base: 10px;
-  --track-pad-h-base: 8px;
-  --track-title-size-base: 22px;
-  --track-title-weight: 800;
-  --track-title-color: var(--text);
-  --track-author-size-base: 16px;
-  --track-author-weight: 700;
-  --track-author-color: var(--muted);
-  --track-time-size-base: 18px;
-  --track-time-weight: 700;
-  --track-time-color: var(--muted);
+  /* масштаб карточек треков */
+  --track-scale-px:70;
+  --track-card-width:min(96vw,700px);
+  --cover-size-base:72px; --cover-radius-base:12px; --track-gap-base:14px; --track-spacing-base:12px;
+  --track-pad-v-base:10px; --track-pad-h-base:8px;
+  --track-title-size-base:22px; --track-title-weight:800; --track-title-color:var(--text);
+  --track-author-size-base:16px; --track-author-weight:700; --track-author-color:var(--muted);
+  --track-time-size-base:18px; --track-time-weight:700; --track-time-color:var(--muted);
+
+  /* === RING (подсветка нажатия) === */
+  --ctrl-ring-color: rgba(100, 99, 99, 0.51);
+  --ctrl-ring-width: 2px;
+  --ctrl-ring-scale: 1.35;
+  --ctrl-ring-in: 140ms;
+  --ctrl-ring-out: 180ms;
 
   /* производные */
-  --_track-scale: calc(var(--track-scale-px) / 100);
-  --cover-size: calc(var(--cover-size-base) * var(--_track-scale));
-  --cover-radius: calc(var(--cover-radius-base) * var(--_track-scale));
-  --track-gap: calc(var(--track-gap-base) * var(--_track-scale));
-  --track-spacing: calc(var(--track-spacing-base) * var(--_track-scale));
-  --track-title-size: calc(var(--track-title-size-base) * var(--_track-scale));
-  --track-author-size: calc(var(--track-author-size-base) * var(--_track-scale));
-  --track-time-size: calc(var(--track-time-size-base) * var(--_track-scale));
-  --track-pad-v: calc(var(--track-pad-v-base) * var(--_track-scale));
-  --track-pad-h: calc(var(--track-pad-h-base) * var(--_track-scale));
+  --_track-scale: calc(var(--track-scale-px)/100);
+  --cover-size: calc(var(--cover-size-base)*var(--_track-scale));
+  --cover-radius: calc(var(--cover-radius-base)*var(--_track-scale));
+  --track-gap: calc(var(--track-gap-base)*var(--_track-scale));
+  --track-spacing: calc(var(--track-spacing-base)*var(--_track-scale));
+  --track-title-size: calc(var(--track-title-size-base)*var(--_track-scale));
+  --track-author-size: calc(var(--track-author-size-base)*var(--_track-scale));
+  --track-time-size: calc(var(--track-time-size-base)*var(--_track-scale));
+  --track-pad-v: calc(var(--track-pad-v-base)*var(--_track-scale));
+  --track-pad-h: calc(var(--track-pad-h-base)*var(--_track-scale));
 }
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
   margin:0; color:var(--text);
   font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans",sans-serif;
-  background: linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
-  background-attachment: fixed;
+  background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
+  background-attachment:fixed;
   display:flex; justify-content:center; align-items:flex-start;
-  padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 40px);
+  padding:clamp(24px,4vw,48px) clamp(16px,3vw,40px);
 }
-.main-wrapper{
-  width:min(96vw, 1200px);
-  display:flex; flex-direction:column; align-items:center;
-  gap: clamp(18px,2vw,28px);
-}
+.main-wrapper{ width:min(96vw,1200px); display:flex; flex-direction:column; align-items:center; gap:clamp(18px,2vw,28px); }
 
-/* ===== HERO ===== */
-.hero-box{
-  width: 100%;
-  height: var(--hero-box-height);
-  flex: 0 0 var(--hero-box-height);
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  overflow: hidden;
-}
+/* HERO */
+.hero-box{ width:100%; height:var(--hero-box-height); flex:0 0 var(--hero-box-height); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; }
 #hero{
-  margin: 0;
-  padding: var(--hero-pad-top) var(--hero-pad-right) var(--hero-pad-bottom) var(--hero-pad-left);
-  font-size: var(--h1-size);
-  font-weight: var(--h1-weight);
-  text-align: center;
-  opacity: 1;
-  transition-property: opacity;
-  transition-duration: var(--h1-fade-in);
-  transition-timing-function: ease;
+  margin:0; padding:var(--hero-pad-top) var(--hero-pad-right) var(--hero-pad-bottom) var(--hero-pad-left);
+  font-size:var(--h1-size); font-weight:var(--h1-weight);
+  text-align:center; opacity:1;
+  transition-property:opacity; transition-duration:var(--h1-fade-in); transition-timing-function:ease;
 }
-#hero.fade-out{ opacity: 0; transition-duration: var(--h1-fade-out); }
-@media (max-width: 600px){ #hero{ text-align: left; } }
-@media (min-width: 600px){ #hero{ text-align:center; padding-left:0; padding-right:0; } }
+#hero.fade-out{ opacity:0; transition-duration:var(--h1-fade-out); }
+@media (max-width:600px){ #hero{ text-align:left; } }
+@media (min-width:600px){ #hero{ text-align:center; padding-left:0; padding-right:0; } }
 
-/* ===== TRACK LIST ===== */
-.track-list{ width: var(--track-card-width); display:flex; flex-direction:column; gap: var(--track-spacing); }
+/* TRACK LIST */
+.track-list{ width:var(--track-card-width); display:flex; flex-direction:column; gap:var(--track-spacing); }
 .track{
-  display:grid; grid-template-columns: var(--cover-size) 1fr auto;
-  gap: var(--track-gap); align-items:center;
-  padding: var(--track-pad-v) var(--track-pad-h);
-  cursor: pointer; background: transparent;
-  border-radius: clamp(6px,.8vw,10px);
-  opacity:0; transform: translateY(10px);
-  transition: opacity .36s ease, transform .36s ease;
-  /* убираем любые «залипания» выбора на телефонах */
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  user-select: none;
+  display:grid; grid-template-columns:var(--cover-size) 1fr auto;
+  gap:var(--track-gap); align-items:center;
+  padding:var(--track-pad-v) var(--track-pad-h);
+  cursor:pointer; background:transparent; border-radius:clamp(6px,.8vw,10px);
+  opacity:0; transform:translateY(10px); transition:opacity .28s ease, transform .28s ease;
+  -webkit-tap-highlight-color:transparent; outline:none; user-select:none; -webkit-user-select:none;
 }
-.track.visible{ opacity:1; transform: translateY(0); }
-.track:hover{ background: rgba(255,255,255,0.04); }
-body.is-playing .track:hover{ background: transparent; }
-.track:focus{ outline: none; }
-.cover{ width: var(--cover-size); height: var(--cover-size); border-radius: var(--cover-radius); background: #bdbdbd; flex-shrink: 0; }
+.track.visible{ opacity:1; transform:translateY(0); }
+.track:hover{ background:rgba(255,255,255,0.04); }
+body.is-playing .track:hover{ background:transparent; }
+.track:focus{ outline:none; }
+.cover{ width:var(--cover-size); height:var(--cover-size); border-radius:var(--cover-radius); background:#bdbdbd; flex-shrink:0; }
 .track-text{ min-width:0; display:flex; flex-direction:column; gap:6px; }
-.track-title{ font-weight:var(--track-title-weight); font-size: var(--track-title-size); line-height:1.1; word-break: break-word; color: var(--track-title-color); }
-.track-author{ font-size: var(--track-author-size); color: var(--track-author-color); font-weight: var(--track-author-weight); }
-.track-time{ white-space:nowrap; font-weight:var(--track-time-weight); color: var(--track-time-color); font-size: var(--track-time-size); }
+.track-title{ font-weight:var(--track-title-weight); font-size:var(--track-title-size); line-height:1.1; word-break:break-word; color:var(--track-title-color); }
+.track-author{ font-size:var(--track-author-size); color:var(--track-author-color); font-weight:var(--track-author-weight); }
+.track-time{ white-space:nowrap; font-weight:var(--track-time-weight); color:var(--track-time-color); font-size:var(--track-time-size); }
 
-/* ===== PILL ===== */
-.pill{ width: var(--pill-width); background: var(--pill-bg); color: var(--pill-color-label); border-radius: var(--pill-radius); padding: var(--pill-padding-v) var(--pill-padding-h); display:flex; align-items:center; justify-content:space-between; gap: 14px; font-weight:800; box-shadow: 0 2px 0 rgba(0,0,0,.12) inset, 0 1px 0 rgba(255,255,255,.02); }
-.pill .label{ font-size: var(--pill-font-label); color: var(--pill-color-label); opacity:.95; margin:0; }
-.pill .time{ font-size: var(--pill-font-time); color: var(--pill-color-time); font-weight:800; white-space:nowrap; }
+/* PILL */
+.pill{ width:var(--pill-width); background:var(--pill-bg); color:var(--pill-color-label); border-radius:var(--pill-radius); padding:var(--pill-padding-v) var(--pill-padding-h); display:flex; align-items:center; justify-content:space-between; gap:14px; font-weight:800; box-shadow:0 2px 0 rgba(0,0,0,.12) inset, 0 1px 0 rgba(255,255,255,.02); }
+.pill .label{ font-size:var(--pill-font-label); color:var(--pill-color-label); opacity:.95; margin:0; }
+.pill .time{ font-size:var(--pill-font-time); color:var(--pill-color-time); font-weight:800; white-space:nowrap; }
 
-/* ===== PLAYER SHEET ===== */
+/* PLAYER SHEET */
 audio{ display:none; }
-.player-overlay{ position: fixed; inset: 0; display: grid; align-content: end; justify-items: center; background: transparent; pointer-events: none; z-index: var(--overlay-z); transition: background var(--sheet-open-duration) linear; backdrop-filter: none; }
-.player-overlay[data-state="open"]{ background: var(--overlay-bg); backdrop-filter: blur(var(--overlay-blur)); pointer-events: auto; }
+.player-overlay{ position:fixed; inset:0; display:grid; align-content:end; justify-items:center; background:transparent; pointer-events:none; z-index:var(--overlay-z); transition:background var(--sheet-open-duration) linear; backdrop-filter:none; }
+.player-overlay[data-state="open"]{ background:var(--overlay-bg); backdrop-filter:blur(var(--overlay-blur)); pointer-events:auto; }
 .player-sheet{
-  position: relative; width: min(100vw, var(--sheet-max-width)); height: var(--sheet-height);
-  background: var(--player-bg); color: var(--player-color);
-  border-radius: var(--sheet-radius-current) var(--sheet-radius-current) 0 0; /* динамический радиус */
-  box-shadow: var(--player-shadow); border: var(--player-border);
-  padding: var(--sheet-top-padding) var(--sheet-side-padding) calc(var(--sheet-side-padding) + env(safe-area-inset-bottom));
-  display:flex; flex-direction:column; gap: clamp(12px, 2.2vw, 20px);
-  will-change: transform, border-radius;
-  transform: translateY(100%);
-  transition: transform var(--sheet-open-duration) var(--sheet-ease), border-radius 120ms linear;
-  contain: layout paint style;
-  touch-action: none;
+  position:relative; width:min(100vw,var(--sheet-max-width)); height:var(--sheet-height);
+  background:var(--player-bg); color:var(--player-color);
+  border-radius:var(--sheet-radius-current) var(--sheet-radius-current) 0 0;
+  box-shadow:var(--player-shadow); border:var(--player-border);
+  padding:var(--sheet-top-padding) var(--sheet-side-padding) calc(var(--sheet-side-padding) + env(safe-area-inset-bottom));
+  display:flex; flex-direction:column; gap:clamp(12px,2.2vw,20px);
+  will-change:transform,border-radius;
+  transform:translateY(100%);
+  transition:transform var(--sheet-open-duration) var(--sheet-ease), border-radius 120ms linear;
+  contain:layout paint style; touch-action:none;
 }
-.player-overlay[data-state="open"] .player-sheet{ transform: translateY(0%); touch-action: none; }
+.player-overlay[data-state="open"] .player-sheet{ transform:translateY(0%); touch-action:none; }
 
-.cover-large{ width: var(--cover-size-player); height: var(--cover-size-player); background: var(--cover-bg); border-radius: var(--cover-radius-player); margin: var(--cover-top) auto 8px; box-shadow: 0 6px 22px rgba(0,0,0,0.4); flex: 0 0 auto; }
-.meta{ text-align:center; margin-bottom: 8px; }
-.title{ color: var(--title-color); font-size: var(--title-size); font-weight: var(--title-weight); margin: 6px 0 4px; }
-.author{ color: var(--author-color); font-size: var(--author-size); font-weight: var(--author-weight); }
-.progress-shell{ width: min(100%, var(--progress-width)); margin: 0 auto; }
-.progress{ width: 100%; height: var(--progress-height); background: var(--progress-bg); border-radius: var(--progress-radius); position: relative; display:flex; align-items:center; }
-.progress .fill{ height:100%; background: var(--progress-fill); width:0%; border-radius: var(--progress-radius); }
-.progress .marker{ position:absolute; left:0%; transform: translate(-50%, -50%); top:50%; width: var(--marker-size); height: var(--marker-size); background: var(--marker-color); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; touch-action: none; }
-.time-row{ width: 100%; margin: 6px auto 0; display:flex; justify-content:space-between; align-items:center; }
-.time-left,.time-right{ color: var(--time-color); font-size: var(--time-font); }
-.controls{ display:flex; gap: var(--controls-gap); align-items:center; justify-content:center; margin: var(--controls-offset-y) 0 var(--controls-offset-bottom); }
-.btn{ width: var(--btn-size); height: var(--btn-size); border-radius: var(--btn-radius); background: var(--btn-bg); display:flex; align-items:center; justify-content:center; cursor: pointer; box-shadow: var(--btn-shadow); border: none; }
-.btn.play{ width: var(--btn-size-main); height: var(--btn-size-main); }
-.btn.small{ width: calc(var(--btn-size) - clamp(4px, .8vw, 8px)); height: calc(var(--btn-size) - clamp(4px, .8vw, 8px)); }
-.btn .glyph{ width: 54%; height: 54%; background: var(--btn-fg); border-radius: 6px; }
-.btn.disabled{ opacity:.5; filter: grayscale(1); cursor: default; pointer-events: none; }
+.cover-large{ width:var(--cover-size-player); height:var(--cover-size-player); background:var(--cover-bg); border-radius:var(--cover-radius-player); margin:var(--cover-top) auto 8px; box-shadow:0 6px 22px rgba(0,0,0,0.4); flex:0 0 auto; }
+.meta{ text-align:center; margin-bottom:8px; }
+.title{ color:var(--title-color); font-size:var(--title-size); font-weight:var(--title-weight); margin:6px 0 4px; }
+.author{ color:var(--author-color); font-size:var(--author-size); font-weight:var(--author-weight); }
+.progress-shell{ width:min(100%,var(--progress-width)); margin:0 auto; }
+.progress{ width:100%; height:var(--progress-height); background:var(--progress-bg); border-radius:var(--progress-radius); position:relative; display:flex; align-items:center; }
+.progress .fill{ height:100%; background:var(--progress-fill); width:0%; border-radius:var(--progress-radius); }
+.progress .marker{ position:absolute; left:0%; transform:translate(-50%,-50%); top:50%; width:var(--marker-size); height:var(--marker-size); background:var(--marker-color); border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.5); cursor:pointer; touch-action:none; }
+.time-row{ width:100%; margin:6px auto 0; display:flex; justify-content:space-between; align-items:center; }
+
+/* === КНОПКИ + ИКОНКИ (SVG через CSS) === */
+.controls{ display:flex; gap:var(--controls-gap); align-items:center; justify-content:center; margin:var(--controls-offset-y) 0 var(--controls-offset-bottom); }
+.btn{ position:relative; width:var(--btn-size); height:var(--btn-size); border-radius:999px; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; box-shadow:none; }
+.btn.play{ width:var(--btn-size-main); height:var(--btn-size-main); }
+.btn.small{ width:calc(var(--btn-size) - clamp(4px,.8vw,8px)); height:calc(var(--btn-size) - clamp(4px,.8vw,8px)); }
+.btn .glyph{ width:100%; height:100%; background-repeat:no-repeat; background-position:center; background-size:contain; border-radius:0; }
+
+/* RING: подсветка при нажатии/фокусе */
+.btn::after{
+  content:""; position:absolute; inset:0; border-radius:999px;
+  border: var(--ctrl-ring-width) solid var(--ctrl-ring-color);
+  transform: scale(0.9);
+  opacity:0;
+  transition:
+    transform var(--ctrl-ring-out) ease,
+    opacity var(--ctrl-ring-out) ease;
+  pointer-events:none;
+}
+.btn[data-active="true"]::after,
+.btn:active::after,
+.btn:focus-visible::after{
+  opacity:1;
+  transform: scale(var(--ctrl-ring-scale));
+  transition-duration: var(--ctrl-ring-in);
+}
+
+/* PLAY */
+.icon-play{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='51.692' height='52' fill='none'><ellipse cx='25.846' cy='26' fill='%23FFF' rx='25.846' ry='26'/><path fill='%23282729' fill-opacity='.97' fill-rule='evenodd' d='M37.76 26.942c-2.57 1.185-6.952 3.288-9.83 5.12-2.847 1.812-6.355 4.714-8.394 6.462-.657.563-1.69.098-1.69-.768V14.244c0-.866 1.033-1.331 1.69-.768 2.039 1.748 5.547 4.65 8.394 6.462 2.878 1.832 7.26 3.935 9.83 5.12.793.366.793 1.518 0 1.884Z'/></svg>"); }
+/* PAUSE */
+.icon-pause{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='51.692' height='52' fill='none'><ellipse cx='25.846' cy='26' fill='%23FFF' rx='25.846' ry='26'/><g fill='%23282729' fill-opacity='.97'><rect width='6' height='26' x='29' y='13' rx='2'/><rect width='6' height='26' x='17' y='13' rx='2'/></g></svg>"); }
+/* PREV */
+.icon-prev{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='28' fill='none'><g fill='%23FFF'><path fill-rule='evenodd' d='M2.086 14.942c2.571 1.185 6.952 3.288 9.83 5.12 2.847 1.812 6.356 4.714 8.394 6.462.657.563 1.69.098 1.69-.768V2.244c0-.866-1.033-1.331-1.69-.768-2.038 1.748-5.547 4.65-8.393 6.462-2.879 1.832-7.26 3.935-9.831 5.12-.792.366-.792 1.518 0 1.884Z'/><rect width='2' height='28' rx='1' transform='matrix(-1 0 0 1 3 0)'/></g></svg>"); }
+/* NEXT */
+.icon-next{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='28' fill='none'><g fill='%23FFF'><path fill-rule='evenodd' d='M19.914 14.942c-2.571 1.185-6.952 3.288-9.83 5.12-2.847 1.812-6.356 4.714-8.394 6.462-.657.563-1.69.098-1.69-.768V2.244c0-.866 1.033-1.331 1.69-.768 2.038 1.748 5.547 4.65 8.393 6.462 2.879 1.832 7.26 3.935 9.831 5.12.792.366.792 1.518 0 1.884Z'/><rect width='2' height='28' x='19' rx='1'/></g></svg>"); }
+
+.btn.disabled{ opacity:.5; filter:grayscale(1); cursor:default; pointer-events:none; }
+
 @media (max-width:560px){
-  :root{ --sheet-side-padding: 16px; }
-  .title{ line-height: 1.1; }
+  :root{ --sheet-side-padding:16px; }
+  .title{ line-height:1.1; }
 }
 </style>
 </head>
@@ -269,9 +243,9 @@ audio{ display:none; }
       </div>
 
       <div class="controls">
-        <button class="btn small" id="prevBtn" title="Предыдущий"><div class="glyph"></div></button>
-        <button class="btn play" id="playBtn" title="Воспроизвести"><div class="glyph" id="playGlyph"></div></button>
-        <button class="btn small" id="nextBtn" title="Следующий"><div class="glyph"></div></button>
+        <button class="btn small" id="prevBtn" title="Предыдущий"><div class="glyph icon-prev"></div></button>
+        <button class="btn play" id="playBtn" title="Воспроизвести"><div class="glyph icon-play" id="playGlyph"></div></button>
+        <button class="btn small" id="nextBtn" title="Следующий"><div class="glyph icon-next"></div></button>
       </div>
 
       <audio id="playerAudio" preload="metadata"></audio>
@@ -281,25 +255,25 @@ audio{ display:none; }
 <script>
 /* ====== Данные ====== */
 const tracksData = [
-  { title: "Название сказки", author: "Автор", time: "03:21", src: "media/story1.mp3" },
-  { title: "Название сказки", author: "Автор", time: "04:58", src: "media/story2.mp3" },
-  { title: "Название сказки", author: "Автор", time: "05:12", src: "media/story3.mp3" },
-  { title: "Название сказки", author: "Автор", time: "02:47", src: "media/story4.mp3" },
+  // ← сюда подставляй свой файл (положи его в папку media и поменяй имя ниже)
+  { title:"Тестовая запись", author:"Ты ❤️", time:"00:00", src:"media/test_1.m4a" },
+  { title:"Тестовая запись 2", author:"Автор", time:"04:58", src:"media/test_2.mp3" },
+  { title:"Название сказки", author:"Автор", time:"05:12", src:"media/story3.mp3" },
+  { title:"Название сказки", author:"Автор", time:"02:47", src:"media/story4.mp3" },
 ];
-const KEY = "unlockedCount";
-let unlockedCount = Math.max(1, parseInt(localStorage.getItem(KEY) || "1", 10));
+const KEY="unlockedCount";
+let unlockedCount = Math.max(1, parseInt(localStorage.getItem(KEY)||"1",10));
 unlockedCount = Math.min(unlockedCount, tracksData.length);
 
-const list = document.getElementById("list");
+const list=document.getElementById("list");
 function render(){
-  list.innerHTML = "";
-  const count = Math.min(unlockedCount, tracksData.length);
-  for (let i = 0; i < count; i++){
-    const t = tracksData[i];
-    const row = document.createElement("div");
-    row.className = "track";
-    row.dataset.track = String(i);
-    row.innerHTML = `
+  list.innerHTML="";
+  const count=Math.min(unlockedCount, tracksData.length);
+  for(let i=0;i<count;i++){
+    const t=tracksData[i];
+    const row=document.createElement("div");
+    row.className="track"; row.dataset.track=String(i); row.tabIndex=-1;
+    row.innerHTML=`
       <div class="cover" aria-hidden="true"></div>
       <div class="track-text">
         <div class="track-title">${t.title}</div>
@@ -307,365 +281,234 @@ function render(){
       </div>
       <div class="track-time">${t.time}</div>
     `;
-    row.addEventListener('click', ()=> openPlayerAtIndex(i));
+    row.addEventListener('pointerdown',e=>{ e.preventDefault(); });
+    row.addEventListener('click',()=> openPlayerAtIndex(i));
     list.appendChild(row);
     requestAnimationFrame(()=> row.classList.add('visible'));
   }
-  document.getElementById("pill").style.display = (unlockedCount >= tracksData.length) ? "none" : "flex";
+  document.getElementById("pill").style.display = (unlockedCount>=tracksData.length)?"none":"flex";
 }
 
 /* ===== Таймер 20:00 ===== */
-const countdownEl = document.getElementById("countdown");
+const countdownEl=document.getElementById("countdown");
 function pad(n){ return String(n).padStart(2,'0'); }
-function next2000(){
-  const now = new Date();
-  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
-  if (t - now <= 0) t.setDate(t.getDate()+1);
-  return t;
-}
-let target = next2000();
+function next2000(){ const now=new Date(); const t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20,0,0); if(t-now<=0) t.setDate(t.getDate()+1); return t; }
+let target=next2000();
 function tick(){
-  if (unlockedCount >= tracksData.length){ return; }
-  const now = new Date();
-  let diff = target - now;
-  if (diff <= 0){
-    if (unlockedCount < tracksData.length){
-      unlockedCount += 1;
-      localStorage.setItem(KEY, String(unlockedCount));
-      render();
-    }
-    target = next2000();
-    diff = target - new Date();
-  }
-  const h = Math.floor(diff/3_600_000);
-  const m = Math.floor((diff%3_600_000)/60_000);
-  const s = Math.floor((diff%60_000)/1000);
-  countdownEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+  if (unlockedCount>=tracksData.length) return;
+  const now=new Date(); let diff=target-now;
+  if(diff<=0){ if(unlockedCount<tracksData.length){ unlockedCount+=1; localStorage.setItem(KEY,String(unlockedCount)); render(); } target=next2000(); diff=target-new Date(); }
+  const h=Math.floor(diff/3_600_000), m=Math.floor((diff%3_600_000)/60_000), s=Math.floor((diff%60_000)/1000);
+  countdownEl.textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
   requestAnimationFrame(tick);
 }
 
 /* ===== Плеер ===== */
-const overlay = document.getElementById('playerOverlay');
-const sheet   = document.getElementById('playerSheet');
-const playerAudio  = document.getElementById('playerAudio');
-const playerTitle  = document.getElementById('playerTitle');
-const playerAuthor = document.getElementById('playerAuthor');
-const playBtn = document.getElementById('playBtn');
-const prevBtn = document.getElementById('prevBtn');
-const nextBtn = document.getElementById('nextBtn');
-const timeLeftEl  = document.getElementById('timeLeft');
-const timeRightEl = document.getElementById('timeRight');
-const progressBar    = document.getElementById('progressBar');
-const progressFill   = document.getElementById('progressFill');
-const progressMarker = document.getElementById('progressMarker');
-const root = document.documentElement;
+const overlay=document.getElementById('playerOverlay');
+const sheet=document.getElementById('playerSheet');
+const playerAudio=document.getElementById('playerAudio');
+const playerTitle=document.getElementById('playerTitle');
+const playerAuthor=document.getElementById('playerAuthor');
+const playBtn=document.getElementById('playBtn');
+const prevBtn=document.getElementById('prevBtn');
+const nextBtn=document.getElementById('nextBtn');
+const timeLeftEl=document.getElementById('timeLeft');
+const timeRightEl=document.getElementById('timeRight');
+const progressBar=document.getElementById('progressBar');
+const progressFill=document.getElementById('progressFill');
+const progressMarker=document.getElementById('progressMarker');
+const root=document.documentElement;
 
-let currentIndex = 0;
-let isPlaying = false;
-
-function secToTime(s){
-  if (!isFinite(s)) return '00:00';
-  s = Math.max(0, Math.floor(s));
-  const m = Math.floor(s/60);
-  const sec = s % 60;
-  return `${pad(m)}:${pad(sec)}`;
-}
+let currentIndex=0, isPlaying=false;
+function secToTime(s){ if(!isFinite(s))return'00:00'; s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), sec=s%60; return `${pad(m)}:${pad(sec)}`; }
 function loadTrack(idx){
-  const t = tracksData[idx];
-  currentIndex = idx;
-  playerTitle.textContent = t.title;
-  playerAuthor.textContent = t.author;
-  playerAudio.src = t.src;
-  playerAudio.load();
-  playerAudio.addEventListener('loadedmetadata', ()=> {
-    timeRightEl.textContent = secToTime(playerAudio.duration);
-    updateProgress();
-  }, { once: true });
-  updateNavButtons();
-  updatePlayGlyph();
+  const t=tracksData[idx]; currentIndex=idx;
+  playerTitle.textContent=t.title; playerAuthor.textContent=t.author;
+  playerAudio.src=t.src; playerAudio.load();
+  playerAudio.addEventListener('loadedmetadata',()=>{ timeRightEl.textContent=secToTime(playerAudio.duration); updateProgress(); },{once:true});
+  updateNavButtons(); updatePlayGlyph();
 }
 
-/* ===== Открытие/закрытие + чистим выделение карточки ===== */
-function clearInlineTransform(){ sheet.style.transform = ''; sheet.style.transition = ''; }
-function blurEverything(){ try{ document.activeElement && document.activeElement.blur(); }catch(_){ } }
+/* helper: снять выделения/фокусы */
+function clearSelection(){
+  try{ window.getSelection()?.removeAllRanges(); }catch(_){}
+  try{ document.activeElement && document.activeElement.blur(); }catch(_){}
+}
+function resetRadius(){ root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top')); }
 
+/* открытие/закрытие */
+function clearInlineTransform(){ sheet.style.transform=''; sheet.style.transition=''; }
 function openPlayerAtIndex(idx){
-  loadTrack(idx);
-  clearInlineTransform();
-  sheet.style.transition = `transform var(--sheet-open-duration) var(--sheet-ease)`;
-  overlay.dataset.state = 'open';
-  overlay.setAttribute('aria-hidden','false');
+  loadTrack(idx); clearInlineTransform();
+  sheet.style.transition=`transform var(--sheet-open-duration) var(--sheet-ease), border-radius 120ms linear`;
+  overlay.dataset.state='open'; overlay.setAttribute('aria-hidden','false');
   document.body.classList.add('is-playing');
-  blurEverything();
-  watchTransform('open');
+  clearSelection();
+  requestAnimationFrame(()=> requestAnimationFrame(()=> root.style.setProperty('--sheet-radius-current','0px')));
 }
 function closePlayerSheet(){
-  overlay.dataset.state = 'closed';
-  overlay.setAttribute('aria-hidden','true');
-  clearInlineTransform();
-  playerAudio.pause();
-  isPlaying = false;
-  updatePlayGlyph();
-  document.body.classList.remove('is-playing');
-  root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top'));
-  blurEverything();
+  overlay.dataset.state='closed'; overlay.setAttribute('aria-hidden','true');
+  clearInlineTransform(); playerAudio.pause(); isPlaying=false; updatePlayGlyph();
+  document.body.classList.remove('is-playing'); resetRadius(); clearSelection();
 }
 const __isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-overlay.addEventListener('click', (e)=>{ if (!__isTouch && e.target === overlay) closePlayerSheet(); });
-window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closePlayerSheet(); });
+overlay.addEventListener('click',e=>{ if(!__isTouch && e.target===overlay) closePlayerSheet(); });
+window.addEventListener('keydown',e=>{ if(e.key==='Escape') closePlayerSheet(); });
 
-/* Кнопки */
-playBtn.addEventListener('click', ()=>{
-  if (!playerAudio.src) return;
-  if (isPlaying){ playerAudio.pause(); } else { playerAudio.play().catch(()=>{}); }
-});
-playerAudio.addEventListener('play', ()=>{ isPlaying = true; updatePlayGlyph(); });
-playerAudio.addEventListener('pause', ()=>{ isPlaying = false; updatePlayGlyph(); });
-playerAudio.addEventListener('ended', ()=>{ isPlaying = false; updatePlayGlyph(); });
+/* play/pause — просто переключаем классы иконки */
+playBtn.addEventListener('click',()=>{ if(!playerAudio.src) return; if(isPlaying){playerAudio.pause();}else{playerAudio.play().catch(()=>{});} });
+playerAudio.addEventListener('play',()=>{ isPlaying=true; updatePlayGlyph(); });
+playerAudio.addEventListener('pause',()=>{ isPlaying=false; updatePlayGlyph(); });
+playerAudio.addEventListener('ended',()=>{ isPlaying=false; updatePlayGlyph(); });
 
 function updatePlayGlyph(){
-  const glyph = document.getElementById('playGlyph');
-  if (!glyph) return;
-  glyph.removeAttribute('style'); glyph.innerHTML = '';
-  if (isPlaying){
-    glyph.style.background = 'transparent'; glyph.style.width = '54%'; glyph.style.height = '54%'; glyph.style.position = 'relative';
-    const bar1 = document.createElement('div'); const bar2 = document.createElement('div');
-    Object.assign(bar1.style,{position:'absolute',left:'22%',top:'0',bottom:'0',width:'22%',background:'var(--btn-fg)',borderRadius:'3px'});
-    Object.assign(bar2.style,{position:'absolute',right:'22%',top:'0',bottom:'0',width:'22%',background:'var(--btn-fg)',borderRadius:'3px'});
-    glyph.appendChild(bar1); glyph.appendChild(bar2);
-  } else {
-    glyph.style.background = 'transparent';
-    glyph.style.borderLeft = 'calc(54% * 0.86) solid var(--btn-fg)';
-    glyph.style.borderTop = 'calc(54% * 0.5) solid transparent';
-    glyph.style.borderBottom = 'calc(54% * 0.5) solid transparent';
-    glyph.style.width = '0'; glyph.style.height = '0';
-  }
-}
-prevBtn.addEventListener('click', ()=>{ if (currentIndex > 0 && currentIndex-1 < unlockedCount){ loadTrack(currentIndex - 1); playerAudio.play().catch(()=>{}); }});
-nextBtn.addEventListener('click', ()=>{ if (currentIndex + 1 < unlockedCount){ loadTrack(currentIndex + 1); playerAudio.play().catch(()=>{}); }});
-function updateNavButtons(){
-  if (currentIndex <= 0 || currentIndex - 1 >= unlockedCount) { prevBtn.classList.add('disabled'); } else prevBtn.classList.remove('disabled');
-  if (currentIndex + 1 >= unlockedCount) { nextBtn.classList.add('disabled'); } else nextBtn.classList.remove('disabled');
+  const g=document.getElementById('playGlyph');
+  if(!g) return;
+  g.classList.toggle('icon-play', !isPlaying);
+  g.classList.toggle('icon-pause', isPlaying);
 }
 
-/* ===== Прогресс ===== */
-function updateProgress(){
-  if (!playerAudio.duration || isNaN(playerAudio.duration)) {
-    progressFill.style.width = '0%'; progressMarker.style.left = '0%';
-    timeLeftEl.textContent = '00:00'; timeRightEl.textContent = secToTime(playerAudio.duration || 0); return;
-  }
-  const pct = (playerAudio.currentTime / playerAudio.duration) * 100;
-  progressFill.style.width = pct + '%';
-  progressMarker.style.left = pct + '%';
-  timeLeftEl.textContent = secToTime(playerAudio.currentTime);
+prevBtn.addEventListener('click',()=>{ if(currentIndex>0 && currentIndex-1<unlockedCount){ loadTrack(currentIndex-1); playerAudio.play().catch(()=>{}); } });
+nextBtn.addEventListener('click',()=>{ if(currentIndex+1<unlockedCount){ loadTrack(currentIndex+1); playerAudio.play().catch(()=>{}); } });
+function updateNavButtons(){
+  if(currentIndex<=0 || currentIndex-1>=unlockedCount) prevBtn.classList.add('disabled'); else prevBtn.classList.remove('disabled');
+  if(currentIndex+1>=unlockedCount) nextBtn.classList.add('disabled'); else nextBtn.classList.remove('disabled');
 }
-playerAudio.addEventListener('timeupdate', updateProgress);
-progressBar.addEventListener('click', (e)=>{
-  if (!playerAudio.duration) return;
-  const rect = progressBar.getBoundingClientRect();
-  const x = e.clientX - rect.left;
-  const pct = Math.max(0, Math.min(1, x / rect.width));
-  playerAudio.currentTime = pct * playerAudio.duration;
-  updateProgress();
+
+/* прогресс */
+function updateProgress(){
+  if(!playerAudio.duration || isNaN(playerAudio.duration)){
+    progressFill.style.width='0%'; progressMarker.style.left='0%';
+    timeLeftEl.textContent='00:00'; timeRightEl.textContent=secToTime(playerAudio.duration||0); return;
+  }
+  const pct=(playerAudio.currentTime/playerAudio.duration)*100;
+  progressFill.style.width=pct+'%'; progressMarker.style.left=pct+'%';
+  timeLeftEl.textContent=secToTime(playerAudio.currentTime);
+}
+playerAudio.addEventListener('timeupdate',updateProgress);
+progressBar.addEventListener('click',e=>{
+  if(!playerAudio.duration) return;
+  const rect=progressBar.getBoundingClientRect(); const x=e.clientX-rect.left; const pct=Math.max(0,Math.min(1,x/rect.width));
+  playerAudio.currentTime=pct*playerAudio.duration; updateProgress();
 });
-let dragging = false;
-progressMarker.addEventListener('mousedown', (e)=>{ e.preventDefault(); dragging = true; });
-window.addEventListener('mousemove', (e)=>{
-  if (!dragging || !playerAudio.duration) return;
-  const rect = progressBar.getBoundingClientRect();
-  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-  const pct = x / rect.width;
-  progressMarker.style.left = (pct*100) + '%';
-  progressFill.style.width = (pct*100) + '%';
-  playerAudio.currentTime = pct * playerAudio.duration;
+let dragging=false;
+progressMarker.addEventListener('mousedown',e=>{ e.preventDefault(); dragging=true; });
+window.addEventListener('mousemove',e=>{
+  if(!dragging || !playerAudio.duration) return;
+  const rect=progressBar.getBoundingClientRect(); const x=Math.max(0,Math.min(rect.width,e.clientX-rect.left));
+  const pct=x/rect.width; progressMarker.style.left=(pct*100)+'%'; progressFill.style.width=(pct*100)+'%'; playerAudio.currentTime=pct*playerAudio.duration;
 });
-window.addEventListener('mouseup', ()=> { dragging = false; });
-progressMarker.addEventListener('touchstart', ()=>{ dragging = true; }, {passive:true});
-window.addEventListener('touchmove', (e)=>{
-  if (!dragging || !playerAudio.duration) return;
-  const touch = e.touches[0];
-  const rect = progressBar.getBoundingClientRect();
-  const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
-  const pct = x / rect.width;
-  progressMarker.style.left = (pct*100) + '%';
-  progressFill.style.width = (pct*100) + '%';
-  playerAudio.currentTime = pct * playerAudio.duration;
-}, {passive:true});
-window.addEventListener('touchend', ()=> { dragging = false; });
+window.addEventListener('mouseup',()=>{ dragging=false; });
+progressMarker.addEventListener('touchstart',()=>{ dragging=true; },{passive:true});
+window.addEventListener('touchmove',e=>{
+  if(!dragging || !playerAudio.duration) return;
+  const touch=e.touches[0]; const rect=progressBar.getBoundingClientRect(); const x=Math.max(0,Math.min(rect.width,touch.clientX-rect.left));
+  const pct=x/rect.width; progressMarker.style.left=(pct*100)+'%'; progressFill.style.width=(pct*100)+'%'; playerAudio.currentTime=pct*playerAudio.duration;
+},{passive:true});
+window.addEventListener('touchend',()=>{ dragging=false; });
 
 /* ===== Ротация h1 ===== */
-const MOBILE_BP = 600;
-const isMobile = () => window.matchMedia(`(max-width:${MOBILE_BP}px)`).matches;
-const phrases = [
-  { text: "Я люблю тебя <З", pc:{size:64,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"} },
-  { text: "У тебя всё получится!", pc:{size:62,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"} },
-  { text: "Ты большая молодец, я тобой горжусь <З", pc:{size:58,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"} },
-  { text: "Улыбайся чаще моё сокровище, ты прекрасна!", pc:{size:56,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"} },
-  { text: "Нет ничего красивее твоей улыбки)", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"} },
-  { text: "Как бы ни было трудно и сложно - ты моё солнышко. Я люблю тебя <З", pc:{size:44,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"} },
-  { text: "Для самой маленькой и любимой принцессы..", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"} },
-  { text: "Ты знала, что самая милая булочка на планете сейчас читает этот текст???", pc:{size:46,weight:900,color:"#FFF",align:"center"}, mob:{size:28,weight:900,color:"#FFF",align:"left"} },
+const MOBILE_BP=600;
+const isMobile=()=>window.matchMedia(`(max-width:${MOBILE_BP}px)`).matches;
+const phrases=[
+  {text:"Я люблю тебя <З", pc:{size:64,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"}},
+  {text:"У тебя всё получится!", pc:{size:62,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"}},
+  {text:"Ты большая молодец, я тобой горжусь <З", pc:{size:58,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
+  {text:"Улыбайся чаще моё сокровище, ты прекрасна!", pc:{size:56,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
+  {text:"Нет ничего красивее твоей улыбки)", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
+  {text:"Как бы ни было трудно и сложно - ты моё солнышко. Я люблю тебя <З", pc:{size:44,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
+  {text:"Для самой маленькой и любимой принцессы..", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
+  {text:"Ты знала, что самая милая булочка на планете сейчас читает этот текст???", pc:{size:46,weight:900,color:"#FFF",align:"center"}, mob:{size:28,weight:900,color:"#FFF",align:"left"}},
 ];
-const hero = document.getElementById('hero');
-let phraseIdx = 0;
-let rotTimer = null;
-let rotIntervalMs = 8_500;
-
+const hero=document.getElementById('hero');
+let phraseIdx=0, rotTimer=null, rotIntervalMs=8500;
 function applyCurrentPhrase(){
-  const ph = phrases[phraseIdx];
-  const cfg = isMobile() ? (ph.mob || ph.pc) : (ph.pc || ph.mob);
-  hero.innerHTML = ph.text || '';
-  hero.style.fontSize   = (cfg.size   ?? 56) + 'px';
-  hero.style.fontWeight = (cfg.weight ?? 900);
-  hero.style.color      = (cfg.color  || '#FFF');
-  hero.style.textAlign  = isMobile() ? (cfg.align || 'left') : 'center';
+  const ph=phrases[phraseIdx]; const cfg=isMobile()?(ph.mob||ph.pc):(ph.pc||ph.mob);
+  hero.innerHTML=ph.text||''; hero.style.fontSize=(cfg.size??56)+'px'; hero.style.fontWeight=(cfg.weight??900);
+  hero.style.color=(cfg.color||'#FFF'); hero.style.textAlign=isMobile()?(cfg.align||'left'):'center';
 }
-function rotateHero(){
-  hero.classList.add('fade-out');
-  const outMs = parseTime(getComputedStyle(document.documentElement).getPropertyValue('--h1-fade-out'));
-  setTimeout(()=>{ phraseIdx = (phraseIdx + 1) % phrases.length; applyCurrentPhrase(); hero.classList.remove('fade-out'); }, outMs);
-}
-try {
-  const mq = window.matchMedia(`(max-width:${MOBILE_BP}px)`);
-  if (mq.addEventListener) mq.addEventListener('change', applyCurrentPhrase);
-  else if (mq.addListener) mq.addListener(applyCurrentPhrase);
-  window.addEventListener('orientationchange', applyCurrentPhrase);
-} catch(_) {}
-function startRotation(){ stopRotation(); rotTimer = setInterval(rotateHero, rotIntervalMs); }
-function stopRotation(){ if (rotTimer){ clearInterval(rotTimer); rotTimer = null; } }
-function parseTime(str){ const s = String(str).trim(); if (s.endsWith('ms')) return parseFloat(s); if (s.endsWith('s')) return parseFloat(s)*1000; const n = parseFloat(s); return Number.isFinite(n) ? n : 420; }
+function rotateHero(){ hero.classList.add('fade-out'); const outMs=parseTime(getComputedStyle(document.documentElement).getPropertyValue('--h1-fade-out'));
+  setTimeout(()=>{ phraseIdx=(phraseIdx+1)%phrases.length; applyCurrentPhrase(); hero.classList.remove('fade-out'); }, outMs); }
+try{ const mq=window.matchMedia(`(max-width:${MOBILE_BP}px)`); (mq.addEventListener?mq.addEventListener('change',applyCurrentPhrase):mq.addListener(applyCurrentPhrase)); window.addEventListener('orientationchange',applyCurrentPhrase);}catch(_){}
+function startRotation(){ stopRotation(); rotTimer=setInterval(rotateHero, rotIntervalMs); }
+function stopRotation(){ if(rotTimer){ clearInterval(rotTimer); rotTimer=null; } }
+function parseTime(str){ const s=String(str).trim(); if(s.endsWith('ms')) return parseFloat(s); if(s.endsWith('s')) return parseFloat(s)*1000; const n=parseFloat(s); return Number.isFinite(n)?n:420; }
 
-/* ===== Drag-to-close без подвисаний + мягкие динамические радиусы ===== */
+/* ===== Drag-to-close: одно движение ===== */
 const __isTouchDevice = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-let __dragging = false, __startY = 0, __curPct = 0, __raf = 0, __lastY = 0, __intent = 'open';
+let __dragging=false, __startY=0, __curPct=0;
+const MIN_DRAG_PX = 4;
 
-/* Порог закрытия (регулируй «тугость») */
-const DRAG_CLOSE_THRESHOLD = 0.22; // 22% высоты
-
-/* Параметры скруглений (легко подкрутить по вкусу) */
-const R_OPEN_START = 0.96;   // с какой доли открытия начинать уменьшать радиусы (например, 0.96 = после 96%)
-const R_CLOSE_END  = 0.95;   // к какой доле закрытия радиусы должны вернуться к базовым (0.95 = уже на 95%)
-const R_EXP        = 1.35;   // степень easing-а кривой скруглений (больше — плавнее старт)
-
-function setRadiusByProgress(progress, intent){
-  // progress: 0..1 (0 — закрыт, 1 — открыт полностью)
-  const R = parseFloat(getComputedStyle(root).getPropertyValue('--sheet-radius-top')) || 16;
-  let radius = R;
-
-  if (intent === 'open'){
-    if (progress <= R_OPEN_START){ radius = R; }
-    else {
-      const t0 = (progress - R_OPEN_START) / (1 - R_OPEN_START);      // 0..1 на участке R_OPEN_START→1
-      const t  = Math.min(1, Math.max(0, Math.pow(t0, R_EXP)));       // сглаживаем старт
-      radius = R * (1 - t);                                           // к 100% → 0
-    }
-  } else if (intent === 'close'){
-    if (progress >= R_CLOSE_END){
-      const t0 = (1 - progress) / (1 - R_CLOSE_END);                  // 0..1 на участке 1→R_CLOSE_END
-      const t  = Math.min(1, Math.max(0, Math.pow(t0, R_EXP)));
-      radius = R * t;                                                 // к 95% → R
-    } else {
-      radius = R;
-    }
-  } else {
-    radius = R;
-  }
-  root.style.setProperty('--sheet-radius-current', radius + 'px');
+function radiusByProgress(progress){
+  const R=parseFloat(getComputedStyle(root).getPropertyValue('--sheet-radius-top'))||16;
+  if(progress<=0.90) return R;
+  const t=Math.min(1,(progress-0.90)/0.10);
+  return R*(1-t);
 }
-
-function __applyDragFrame(pct){
-  sheet.style.transform = `translateY(${pct*100}%)`;
-  const progress = 1 - pct;               // 0..1
-  setRadiusByProgress(progress, __intent);
+function applyDrag(pct){
+  sheet.style.transform=`translateY(${pct*100}%)`;
+  const progress=1-pct;
+  root.style.setProperty('--sheet-radius-current', radiusByProgress(progress)+'px');
 }
-function __onDown(e){
-  if (!__isTouchDevice) return;
-  if (overlay.dataset.state !== 'open') return;
-  __dragging = true;
-  __startY = ('touches' in e) ? e.touches[0].clientY : e.clientY;
-  __lastY  = __startY;
-  __curPct = 0;
-  sheet.style.transition = 'none';
+function onDown(e){
+  if(!__isTouchDevice) return;
+  if(overlay.dataset.state!=='open') return;
+  __dragging=true;
+  __startY=('touches'in e)?e.touches[0].clientY:e.clientY;
+  __curPct=0;
+  sheet.style.transition='none';
 }
-function __onMove(e){
-  if (!__dragging || !__isTouchDevice) return;
-  const y = ('touches' in e) ? e.touches[0].clientY : e.clientY;
-  const dy = y - __startY;
-  __intent = (y - __lastY) > 0 ? 'close' : 'open';
-  __lastY = y;
-
-  const height = sheet.getBoundingClientRect().height || 1;
-  const pct = Math.max(0, Math.min(1, dy / height));
-  __curPct = pct;
-
-  if (!__raf){ __raf = requestAnimationFrame(()=>{ __applyDragFrame(__curPct); __raf = 0; }); }
+function onMove(e){
+  if(!__dragging||!__isTouchDevice) return;
+  const y=('touches'in e)?e.touches[0].clientY:e.clientY;
+  const dy=y-__startY;
+  const h=sheet.getBoundingClientRect().height||1;
+  const pct=Math.max(0, Math.min(1, dy/h));
+  __curPct=pct;
+  applyDrag(__curPct);
 }
-function __onUp(){
-  if (!__dragging || !__isTouchDevice) return;
-  __dragging = false;
-  sheet.style.transition = `transform var(--sheet-close-duration) var(--sheet-ease), border-radius 120ms linear`;
-  const willClose = (__curPct > DRAG_CLOSE_THRESHOLD);
-  if (willClose){
-    sheet.style.transform = 'translateY(100%)';
-    watchTransform('close');
-    sheet.addEventListener('transitionend', ()=>{ root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top')); closePlayerSheet(); }, { once:true });
-  } else {
-    sheet.style.transform = 'translateY(0%)';
-    watchTransform('open');
+function onUp(){
+  if(!__dragging||!__isTouchDevice) return;
+  __dragging=false;
+  sheet.style.transition=`transform var(--sheet-close-duration) var(--sheet-ease), border-radius 120ms linear`;
+  const willClose = (__curPct > (MIN_DRAG_PX / (sheet.getBoundingClientRect().height||1)));
+  if(willClose){
+    root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top'));
+    sheet.style.transform='translateY(100%)';
+    sheet.addEventListener('transitionend', ()=>{ closePlayerSheet(); }, {once:true});
+  }else{
+    sheet.style.transform='translateY(0%)';
+    sheet.addEventListener('transitionend', ()=>{ root.style.setProperty('--sheet-radius-current','0px'); }, {once:true});
   }
 }
-sheet.addEventListener('touchstart', __onDown, {passive:true});
-window.addEventListener('touchmove', __onMove, {passive:true});
-window.addEventListener('touchend', __onUp);
+sheet.addEventListener('touchstart', onDown, {passive:true});
+window.addEventListener('touchmove', onMove, {passive:true});
+window.addEventListener('touchend', onUp);
 
-/* Во время CSS‑анимаций по клику читаем translateY и меняем радиусы так же плавно */
-let watchId = 0;
-function watchTransform(intent){
-  cancelAnimationFrame(watchId);
-  const h = sheet.getBoundingClientRect().height || 1;
-  const step = () =>{
-    const tr = getComputedStyle(sheet).transform;
-    let ty = 0;
-    if (tr && tr !== 'none'){
-      const m = tr.match(/matrix\(([^)]+)\)/);
-      if (m){
-        const parts = m[1].split(',').map(parseFloat);
-        ty = parts.length >= 6 ? parts[5] : 0;
-      }
-    }
-    const pct = Math.max(0, Math.min(1, ty / h));
-    setRadiusByProgress(1 - pct, intent);
-    if ((intent === 'open' && pct > 0) || (intent === 'close' && pct < 1)){
-      watchId = requestAnimationFrame(step);
-    } else {
-      if (intent === 'open'){ root.style.setProperty('--sheet-radius-current', '0px'); }
-      if (intent === 'close'){ root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top')); }
-    }
-  };
-  watchId = requestAnimationFrame(step);
-}
+/* ====== RING JS: ставим/снимаем флаг активности ====== */
+const ringTargets = [prevBtn, playBtn, nextBtn];
+ringTargets.forEach(btn=>{
+  btn.addEventListener('pointerdown', ()=> btn.dataset.active = "true");
+  btn.addEventListener('pointerup',   ()=> delete btn.dataset.active);
+  btn.addEventListener('pointercancel',()=> delete btn.dataset.active);
+  btn.addEventListener('pointerleave', ()=> delete btn.dataset.active);
+  btn.addEventListener('blur',         ()=> delete btn.dataset.active);
+  btn.addEventListener('keydown', e=>{
+    if (e.key === ' ' || e.key === 'Enter') btn.dataset.active = "true";
+  });
+  btn.addEventListener('keyup', ()=> delete btn.dataset.active);
+});
 
-/* Плавный масштаб карточек: 70 → 68 при ширине 330→600px */
-(() => {
-  const Wmin = 330, Wmax = 600, Smin = 70, Smax = 68;
-  function update() {
-    const w = Math.max(Wmin, Math.min(window.innerWidth || document.documentElement.clientWidth, Wmax));
-    const t = (w - Wmin) / (Wmax - Wmin);
-    const s = Smin + (Smax - Smin) * t;
-    root.style.setProperty('--track-scale-px', s.toFixed(2));
-  }
-  let raf = 0;
-  function onResize(){ if (!raf) raf = requestAnimationFrame(()=>{ raf = 0; update(); }); }
-  window.addEventListener('resize', onResize);
-  window.addEventListener('orientationchange', onResize);
-  update();
+/* Плавный масштаб карточек: 70 → 68 при ширине 330→600 */
+(()=>{ const Wmin=330, Wmax=600, Smin=70, Smax=68;
+  function update(){ const w=Math.max(Wmin,Math.min(window.innerWidth||document.documentElement.clientWidth,Wmax));
+    const t=(w-Wmin)/(Wmax-Wmin); const s=Smin+(Smax-Smin)*t; document.documentElement.style.setProperty('--track-scale-px', s.toFixed(2)); }
+  let raf=0; function onResize(){ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; update(); }); }
+  window.addEventListener('resize',onResize); window.addEventListener('orientationchange',onResize); update();
 })();
 
 /* INIT */
-render();
-tick();
-applyCurrentPhrase();
-startRotation();
+render(); tick(); applyCurrentPhrase(); startRotation();
 </script>
 </body>
 </html>
