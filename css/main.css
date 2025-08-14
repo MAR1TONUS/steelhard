@@ -1,0 +1,263 @@
+:root{
+    --bg-top: #190829;
+    --bg-bottom: #010007;
+    --text: #F3F2F7;
+    --muted: #cfcfcfcf;
+    --track-gap: clamp(12px, 1.6vw, 18px);
+    --cover-size: clamp(64px, 5.2vw, 86px);
+    --cover-radius: clamp(10px, 1.2vw, 14px);
+    --track-title-size: clamp(18px, 2.2vw, 26px);
+    --track-author-size: clamp(12px, 1.3vw, 16px);
+    --track-time-size: clamp(12px, 1.4vw, 16px);
+    --track-spacing: clamp(8px, 1.2vw, 14px);
+    --pill-bg: #2b2b2b;
+    --pill-color-label: #C6C6C6;
+    --pill-color-time: #BFBFBF;
+    --pill-padding-v: clamp(10px, 1.2vw, 14px);
+    --pill-padding-h: clamp(16px, 2vw, 22px);
+    --pill-radius: 10px;
+    --pill-width: min(92vw, 350px);
+    --pill-font-label: clamp(12px, 1.6vw, 12px);
+    --pill-font-time: clamp(11px, 2.2vw, 11px);
+    --overlay-bg: rgba(7,6,8,0.55);
+    --overlay-blur: 8px;
+    --overlay-z: 1200;
+    --sheet-open-duration: 260ms;
+    --sheet-close-duration: 220ms;
+    --sheet-ease: cubic-bezier(.22,1,.36,1);
+    --sheet-height: 100svh;
+    --sheet-max-width: 700px;
+    --sheet-side-padding: clamp(16px, 3.2vw, 40px);
+    --sheet-top-padding: clamp(16px, 3.2vw, 36px);
+    --sheet-radius-top: clamp(12px, 2vw, 22px);
+    --player-bg: #505050;
+    --player-color: var(--text);
+    --player-shadow: 0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
+    --player-border: 0px solid transparent;
+    --title-color: #FFFFFF;
+    --title-size: clamp(18px, 2.4vw, 28px);
+    --title-weight: 800;
+    --author-color: #BDBDBD;
+    --author-size: clamp(14px, 1.8vw, 18px);
+    --author-weight: 700;
+    --cover-size-player: clamp(250px, 32vw, 280px);
+    --cover-radius-player: clamp(10px, 1.4vw, 16px);
+    --cover-bg: #C4C4C4;
+    --btn-bg: #FFFFFF;
+    --btn-fg: #C4C4C4;
+    --btn-size: clamp(45px, 6vw, 60px);
+    --btn-size-main: clamp(52px, 7vw, 64px);
+    --btn-radius: 999px;
+    --btn-shadow: 0 1px 22px rgba(0,0,0,.45);
+    --controls-gap: clamp(34px, 2vw, 40px);
+    --controls-offset-y: clamp(65px, 2vw, 20px);
+    --controls-offset-bottom: 6px;
+    --progress-height: clamp(5px, 0.8vw, 6px);
+    --progress-radius: 999px;
+    --progress-bg: rgba(255,255,255,0.14);
+    --progress-fill: #FFFFFF;
+    --marker-size: clamp(10px, 1.4vw, 16px);
+    --marker-color: #FFFFFF;
+    --time-color: #BEBEBE;
+    --time-font: clamp(12px, 1.4vw, 14px);
+    --progress-w-min: 280px;
+    --progress-w-ideal: 60vw;
+    --progress-w-max: 475px;
+    --progress-width: clamp(var(--progress-w-min), var(--progress-w-ideal), var(--progress-w-max));
+    --cover-top-min: 24px;
+    --cover-top-ideal: 8vh;
+    --cover-top-max: 120px;
+    --cover-top: clamp(var(--cover-top-min), var(--cover-top-ideal), var(--cover-top-max));
+
+    /* ===== Новые переменные ТОЛЬКО для h1 (не ломают твоё) ===== */
+    --h1-size: clamp(26px, 6vw, 60px);
+    --h1-weight: 800;
+    --h1-mt: 70px;     /* верхний отступ (исправил без единиц на px) */
+    --h1-mb: 150px;     /* нижний отступ */
+    --h1-mobile-left: 0px; /* левый отступ на телефоне */
+
+    --h1-fade-in: 420ms;
+    --h1-fade-out: 420ms;
+    --hero-min: 22px;
+    --hero-max: 72px;
+    --hero-fit-factor: 1; /* 0.85 = на 15% меньше от подобранного */
+}
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{ margin:0; color:var(--text); font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans",sans-serif;
+    background: linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%); background-attachment: fixed; display:flex; justify-content:center; align-items:flex-start; padding: clamp(24px, 4vw, 48px) clamp(16px, 3vw, 40px); }
+  .main-wrapper{ width:min(96vw, 1200px); display:flex; flex-direction:column; align-items:center; gap: clamp(18px,2vw,28px); }
+
+  /* === Твой исходный h1 (оставляю), НО ниже я его ПЕРЕОПРЕДЕЛЮ для нужного поведения === */
+  h1{ font-weight:800; font-size: clamp(26px,6vw,60px); line-height:.95; text-align:center; margin:35 0 70px; }
+
+  .track-list{ width: var(--track-card-width); display:flex; flex-direction:column; gap: var(--track-spacing); }
+  .track{ display:grid; grid-template-columns: var(--cover-size) 1fr auto; gap: var(--track-gap); align-items:center; padding: clamp(8px, 1vw, 12px) clamp(6px, .8vw, 10px); cursor: pointer; background: transparent; border-radius: clamp(6px,.8vw,10px); }
+  .track:hover{ background: rgba(255,255,255,0.04); }
+  .cover{ width: var(--cover-size); height: var(--cover-size); border-radius: var(--cover-radius); background: #bdbdbd; flex-shrink: 0; }
+  .track-text{ min-width:0; display:flex; flex-direction:column; gap:6px; }
+  .track-title{ font-weight:800; font-size: var(--track-title-size); line-height:1.1; word-break: break-word; }
+  .track-author{ font-size: var(--track-author-size); color: var(--muted); }
+  .track-time{ white-space:nowrap; font-weight:800; color: var(--muted); font-size: var(--track-time-size); }
+  .track{ opacity:0; transform: translateY(10px); transition: opacity .36s ease, transform .36s ease;  padding: var(--track-pad-v) var(--track-pad-h);}
+  .track.visible{ opacity:1; transform: translateY(0); }
+  .pill{ width: var(--pill-width); background: var(--pill-bg); color: var(--pill-color-label); border-radius: var(--pill-radius); padding: var(--pill-padding-v) var(--pill-padding-h); display:flex; align-items:center; justify-content:space-between; gap: 14px; font-weight:800; box-shadow: 0 2px 0 rgba(0,0,0,.12) inset, 0 1px 0 rgba(255,255,255,.02); }
+  .pill .label{ font-size: var(--pill-font-label); color: var(--pill-color-label); opacity:.95; margin:0; }
+  .pill .time{ font-size: var(--pill-font-time); color: var(--pill-color-time); font-weight:800; white-space:nowrap; }
+  audio{ display:none; }
+  .player-overlay{ position: fixed; inset: 0; display: grid; align-content: end; justify-items: center; background: transparent; pointer-events: none; z-index: var(--overlay-z); transition: background var(--sheet-open-duration) linear; backdrop-filter: none; }
+  .player-overlay[data-state="open"]{ background: var(--overlay-bg); backdrop-filter: blur(var(--overlay-blur)); pointer-events: auto; }
+  .player-sheet{ position: relative; width: min(100vw, var(--sheet-max-width)); height: var(--sheet-height); background: var(--player-bg); color: var(--player-color); border-radius: var(--sheet-radius-top) var(--sheet-radius-top) 0 0; box-shadow: var(--player-shadow); border: var(--player-border); padding: var(--sheet-top-padding) var(--sheet-side-padding) calc(var(--sheet-side-padding) + env(safe-area-inset-bottom)); display:flex; flex-direction:column; gap: clamp(12px, 2.2vw, 20px); will-change: transform; transform: translateY(100%); transition: transform var(--sheet-open-duration) var(--sheet-ease); contain: layout paint style;
+  touch-action: none;}
+  .player-overlay[data-state="open"] .player-sheet{ transform: translateY(0%);
+  touch-action: none;}
+  
+  .cover-large{ width: var(--cover-size-player); height: var(--cover-size-player); background: var(--cover-bg); border-radius: var(--cover-radius-player); margin: var(--cover-top) auto 8px; box-shadow: 0 6px 22px rgba(0,0,0,0.4); flex: 0 0 auto; }
+  .meta{ text-align:center; margin-bottom: 8px; }
+  .title{ color: var(--title-color); font-size: var(--title-size); font-weight: var(--title-weight); margin: 6px 0 4px; }
+  .author{ color: var(--author-color); font-size: var(--author-size); font-weight: var(--author-weight); }
+  .progress-shell{ width: min(100%, var(--progress-width)); margin: 0 auto; }
+  .progress{ width: 100%; height: var(--progress-height); background: var(--progress-bg); border-radius: var(--progress-radius); position: relative; display:flex; align-items:center; }
+  .progress .fill{ height:100%; background: var(--progress-fill); width:0%; border-radius: var(--progress-radius); }
+  .progress .marker{ position:absolute; left:0%; transform: translate(-50%, -50%); top:50%; width: var(--marker-size); height: var(--marker-size); background: var(--marker-color); border-radius: 50%; box-shadow: 0 2px 6px rgba(0,0,0,0.5); cursor: pointer; touch-action: none; }
+  .time-row{ width: 100%; margin: 6px auto 0; display:flex; justify-content:space-between; align-items:center; }
+  .time-left,.time-right{ color: var(--time-color); font-size: var(--time-font); }
+  .controls{ display:flex; gap: var(--controls-gap); align-items:center; justify-content:center; margin: var(--controls-offset-y) 0 var(--controls-offset-bottom); }
+  .btn{ width: var(--btn-size); height: var(--btn-size); border-radius: var(--btn-radius); background: var(--btn-bg); display:flex; align-items:center; justify-content:center; cursor: pointer; box-shadow: var(--btn-shadow); border: none; }
+  .btn.play{ width: var(--btn-size-main); height: var(--btn-size-main); }
+  .btn.small{ width: calc(var(--btn-size) - clamp(4px, .8vw, 8px)); height: calc(var(--btn-size) - clamp(4px, .8vw, 8px)); }
+  .btn .glyph{ width: 54%; height: 54%; background: var(--btn-fg); border-radius: 6px; }
+  .btn.disabled{ opacity:.5; filter: grayscale(1); cursor: default; pointer-events: none; }
+  @media (max-width:560px){ :root{ --sheet-side-padding: 16px;
+    --hero-min: 22px;
+    --hero-max: 72px;
+    --hero-fit-factor: 1; /* 0.85 = на 15% меньше от подобранного */
+} .title{ line-height: 1.1; } }
+
+  /* ====== ПЕРЕОПРЕДЕЛЕНИЕ h1 (строго под твоё ТЗ) ====== */
+  #hero {
+    font-size: var(--h1-size);
+    font-weight: var(--h1-weight);
+    margin-top: var(--h1-mt);
+    margin-bottom: var(--h1-mb);
+    text-align: center;             /* ПК — центр */
+    opacity: 1;
+    transition-property: opacity;
+    transition-duration: var(--h1-fade-in);
+    transition-timing-function: ease;
+  }
+  #hero.fade-out {
+    opacity: 0;
+    transition-duration: var(--h1-fade-out); /* отдельная длительность на затухание */
+  }
+  /* pointer:coarse block removed — alignment handled in JS */
+
+/* ==================== TRACK CARD CONTROLS (manual) ====================
+   Меняй ТОЛЬКО переменные ниже. Ширина и масштаб — независимы.
+   - --track-scale-px: общий масштаб карточки (100 = 100%). НЕ влияет на ширину.
+   - --track-card-width: ширина списка/карточки.
+   - --cover-size-base / --cover-radius-base: "шапка" (обложка).
+   - --track-title-*, --track-author-*, --track-time-*: текстовые параметры.
+=========================================================================== */
+:root{
+  --track-scale-px: 65;                       /* 120 -> +20% ко ВСЕМ внутренним элементам */
+  --track-card-width: min(96vw, 700px);       /* либо 760px / 820px и т.п. */
+
+  /* БАЗОВЫЕ размеры (до масштабирования) */
+  --cover-size-base: 72px;
+  --cover-radius-base: 12px;
+  --track-gap-base: 14px;
+  --track-spacing-base: 12px;
+
+  /* БАЗОВЫЕ паддинги карточки */
+  --track-pad-v-base: 10px;
+  --track-pad-h-base: 8px;
+
+  /* Текст внутри карточки */
+  --track-title-size-base: 22px;
+  --track-title-weight: 800;
+  --track-title-color: var(--text);
+
+  --track-author-size-base: 16px;
+  --track-author-weight: 700;
+  --track-author-color: var(--muted);
+
+  --track-time-size-base: 18px;
+  --track-time-weight: 700;
+  --track-time-color: var(--muted);
+
+  /* ===== производные (НЕ трогать) ===== */
+  --_track-scale: calc(var(--track-scale-px) / 100);
+  --cover-size: calc(var(--cover-size-base) * var(--_track-scale));
+  --cover-radius: calc(var(--cover-radius-base) * var(--_track-scale));
+  --track-gap: calc(var(--track-gap-base) * var(--_track-scale));
+  --track-spacing: calc(var(--track-spacing-base) * var(--_track-scale));
+  --track-title-size: calc(var(--track-title-size-base) * var(--_track-scale));
+  --track-author-size: calc(var(--track-author-size-base) * var(--_track-scale));
+  --track-time-size: calc(var(--track-time-size-base) * var(--_track-scale));
+  --track-pad-v: calc(var(--track-pad-v-base) * var(--_track-scale));
+  --track-pad-h: calc(var(--track-pad-h-base) * var(--_track-scale));
+}
+/* Привязка переменных к реальным элементам */
+.track-list{ width: var(--track-card-width); margin: 0 auto; }
+.track{ gap: var(--track-gap); padding: var(--track-pad-v) var(--track-pad-h); }
+.cover{ width: var(--cover-size); height: var(--cover-size); border-radius: var(--cover-radius); }
+.track-title{ font-size: var(--track-title-size); font-weight: var(--track-title-weight); color: var(--track-title-color); }
+.track-author{ font-size: var(--track-author-size); font-weight: var(--track-author-weight); color: var(--track-author-color); }
+.track-time{ font-size: var(--track-time-size); font-weight: var(--track-time-weight); color: var(--track-time-color); }
+/* ================== END TRACK CARD CONTROLS ================== */
+
+
+/* === HERO TEXT CONTROLS ===
+   Удобные рычаги для h1: отступы синей коробки и дефолт-выравнивание */
+:root{
+  --hero-box-pad-top: 0px;
+  --hero-box-pad-right: 20px;
+  --hero-box-pad-bottom: 0px;
+  --hero-box-pad-left: 20px;
+  --h1-align-mobile: left;
+  --h1-align-desktop: center;
+}
+
+/* === overrides to keep track cards static and clamp H1 === */
+.main-wrapper{
+  position: relative;
+  min-height: 100vh;
+}
+
+/* H1: width, spacing, clamp, no layout pushes */
+#hero{
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3; /* show up to 3 lines, then clip */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 920px;
+  margin: 48px auto 24px;
+  padding: 0 16px;
+}
+
+/* Fix track list position on the page so it doesn't move with H1 */
+.track-list{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 320px; /* pin where cards start; adjust as needed */
+  bottom: 24px;
+  overflow: auto;
+  padding-bottom: 16px;
+}
+
+/* Make sure the countdown pill floats above */
+.pill{
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Safety on very small screens — allow tracks to start a bit lower */
+@media (max-width: 480px){
+  .track-list{ top: 360px; }
+  #hero{ margin-top: 32px; }
+}
