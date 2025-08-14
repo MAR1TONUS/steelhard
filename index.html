@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Сказочки — плеер с нижним слайдом</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+  <div class="main-wrapper">
+    <h1 id="hero">Для самой маленькой и<br>любимой принцессы..</h1>
+
+    <div id="list" class="track-list"></div>
+
+    <div class="pill" id="pill" aria-live="polite">
+      <div class="label">Сказочка доступна через:</div>
+      <div class="time" id="countdown">00:00</div>
+    </div>
+  </div>
+
+  <div class="player-overlay" id="playerOverlay" data-state="closed" aria-hidden="true">
+    <div class="player-sheet" id="playerSheet" role="dialog" aria-label="Аудиоплеер">
+<div class="cover-large" id="playerCover" aria-hidden="true"></div>
+      <div class="meta">
+        <div class="title" id="playerTitle">Название сказки</div>
+        <div class="author" id="playerAuthor">Автор сказки</div>
+      </div>
+
+      <div class="progress-shell">
+        <div class="progress" id="progressBar" aria-valuemin="0" aria-valuemax="100" role="progressbar">
+          <div class="fill" id="progressFill"></div>
+          <div class="marker" id="progressMarker" role="slider" aria-valuemin="0" aria-valuemax="100" tabindex="0"></div>
+        </div>
+        <div class="time-row">
+          <div class="time-left" id="timeLeft">00:00</div>
+          <div class="time-right" id="timeRight">00:00</div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button class="btn small" id="prevBtn" title="Предыдущий"><div class="glyph"></div></button>
+        <button class="btn play" id="playBtn" title="Воспроизвести"><div class="glyph" id="playGlyph"></div></button>
+        <button class="btn small" id="nextBtn" title="Следующий"><div class="glyph"></div></button>
+      </div>
+
+      <audio id="playerAudio" preload="metadata"></audio>
+    </div>
+  </div>
+
+<script>
+/* ====== Исходные данные треков (вернул надписи) ====== */
+const tracksData = [
+  { title: "Название сказки 1", author: "Автор", time: "03:21", src: "media/story1.mp3" },
+  { title: "Название сказки 2", author: "Автор", time: "04:58", src: "media/story2.mp3" },
+  { title: "Название сказки 3", author: "Автор", time: "05:12", src: "media/story3.mp3" },
+  { title: "Название сказки 4", author: "Автор", time: "02:47", src: "media/story4.mp3" },
+];
+const KEY = "unlockedCount";
+let unlockedCount = Math.max(1, parseInt(localStorage.getItem(KEY) || "1", 10));
+unlockedCount = Math.min(unlockedCount, tracksData.length);
+const list = document.getElementById("list");
+function render(){
+  list.innerHTML = "";
+  const count = Math.min(unlockedCount, tracksData.length);
+  for (let i = 0; i < count; i++){
+    const t = tracksData[i];
+    const row = document.createElement("div");
+    row.className = "track";
+    row.dataset.track = String(i);
+    row.innerHTML = `
+      <div class="cover" aria-hidden="true"></div>
+      <div class="track-text">
+        <div class="track-title">${t.title}</div>
+        <div class="track-author">${t.author}</div>
+      </div>
+      <div class="track-time">${t.time}</div>
+    `;
+    row.addEventListener('click', ()=> openPlayerAtIndex(i));
+    list.appendChild(row);
+    requestAnimationFrame(()=> row.classList.add('visible'));
+  }
+  document.getElementById("pill").style.display = (unlockedCount >= tracksData.length) ? "none" : "flex";
+}
+
+/* ===== Таймер 20:00 (как в исходнике) ===== */
+const countdownEl = document.getElementById("countdown");
+function pad(n){ return String(n).padStart(2,'0'); }
+function next2000(){
+  const now = new Date();
+  const t = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 20, 0, 0);
+  if (t - now <= 0) t.setDate(t.getDate()+1);
+  return t;
+}
+let target = next2000();
+function tick(){
+  if (unlockedCount >= tracksData.length){ return; }
+  const now = new Date();
+  let diff = target - now;
+  if (diff <= 0){
+    if (unlockedCount < tracksData.length){
+      unlockedCount += 1;
+      localStorage.setItem(KEY, String(unlockedCount));
+      render();
+    }
+    target = next2000();
+    diff = target - new Date();
+  }
+  const h = Math.floor(diff/3_600_000);
+  const m = Math.floor((diff%3_600_000)/60_000);
+  const s = Math.floor((diff%60_000)/1000);
+  countdownEl.textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+  requestAnimationFrame(tick);
+}
+
+/* ===== Плеер (без изменений логики) ===== */
+const overlay = document.getElementById('playerOverlay');
+const sheet = document.getElementById('playerSheet');
+const playerAudio = document.getElementById('playerAudio');
+const playerTitle = document.getElementById('playerTitle');
+const playerAuthor = document.getElementById('playerAuthor');
+const playBtn = document.getElementById('playBtn');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const timeLeftEl = document.getElementById('timeLeft');
+const timeRightEl = document.getElementById('timeRight');
+const progressBar = document.getElementById('progressBar');
+const progressFill = document.getElementById('progressFill');
+const progressMarker = document.getElementById('progressMarker');
+let currentIndex = 0;
+let isPlaying = false;
+function secToTime(s){
+  if (!isFinite(s)) return '00:00';
+  s = Math.max(0, Math.floor(s));
+  const m = Math.floor(s/60);
+  const sec = s % 60;
+  return `${pad(m)}:${pad(sec)}`;
+}
+function loadTrack(idx){
+  const t = tracksData[idx];
+  currentIndex = idx;
+  playerTitle.textContent = t.title;
+  playerAuthor.textContent = t.author;
+  playerAudio.src = t.src;
+  playerAudio.load();
+  playerAudio.addEventListener('loadedmetadata', ()=> {
+    timeRightEl.textContent = secToTime(playerAudio.duration);
+    updateProgress();
+  }, { once: true });
+  updateNavButtons();
+  updatePlayGlyph();
+}
+function clearInlineTransform(){ sheet.style.transform = ''; sheet.style.transition = ''; }
+function openPlayerAtIndex(idx){
+  loadTrack(idx);
+  clearInlineTransform();
+  sheet.style.transition = `transform var(--sheet-open-duration) var(--sheet-ease)`;
+  overlay.dataset.state = 'open';
+  overlay.setAttribute('aria-hidden','false');
+}
+function closePlayerSheet(){
+  overlay.dataset.state = 'closed';
+  overlay.setAttribute('aria-hidden','true');
+  clearInlineTransform();
+  playerAudio.pause();
+  isPlaying = false;
+  updatePlayGlyph();
+}
+const __isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+overlay.addEventListener('click', (e)=>{
+  if (!__isTouch && e.target === overlay) closePlayerSheet();
+});
+window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closePlayerSheet(); });
+playBtn.addEventListener('click', ()=>{
+  if (!playerAudio.src) return;
+  if (isPlaying){ playerAudio.pause(); } else { playerAudio.play().catch(()=>{}); }
+});
+playerAudio.addEventListener('play', ()=>{ isPlaying = true; updatePlayGlyph(); });
+playerAudio.addEventListener('pause', ()=>{ isPlaying = false; updatePlayGlyph(); });
+playerAudio.addEventListener('ended', ()=>{ isPlaying = false; updatePlayGlyph(); });
+function updatePlayGlyph(){
+  const glyph = document.getElementById('playGlyph');
+  if (!glyph) return;
+  glyph.removeAttribute('style');
+  glyph.innerHTML = '';
+  if (isPlaying){
+    glyph.style.background = 'transparent';
+    glyph.style.width = '54%';
+    glyph.style.height = '54%';
+    glyph.style.position = 'relative';
+    const bar1 = document.createElement('div');
+    const bar2 = document.createElement('div');
+    Object.assign(bar1.style,{position:'absolute',left:'22%',top:'0',bottom:'0',width:'22%',background:'var(--btn-fg)',borderRadius:'3px'});
+    Object.assign(bar2.style,{position:'absolute',right:'22%',top:'0',bottom:'0',width:'22%',background:'var(--btn-fg)',borderRadius:'3px'});
+    glyph.appendChild(bar1); glyph.appendChild(bar2);
+  } else {
+    glyph.style.background = 'transparent';
+    glyph.style.borderLeft = 'calc(54% * 0.86) solid var(--btn-fg)';
+    glyph.style.borderTop = 'calc(54% * 0.5) solid transparent';
+    glyph.style.borderBottom = 'calc(54% * 0.5) solid transparent';
+    glyph.style.width = '0';
+    glyph.style.height = '0';
+  }
+}
+prevBtn.addEventListener('click', ()=>{
+  if (currentIndex > 0 && currentIndex-1 < unlockedCount){
+    loadTrack(currentIndex - 1);
+    playerAudio.play().catch(()=>{});
+  }
+});
+nextBtn.addEventListener('click', ()=>{
+  if (currentIndex + 1 < unlockedCount){
+    loadTrack(currentIndex + 1);
+    playerAudio.play().catch(()=>{});
+  }
+});
+function updateNavButtons(){
+  if (currentIndex <= 0 || currentIndex - 1 >= unlockedCount) { prevBtn.classList.add('disabled'); } else prevBtn.classList.remove('disabled');
+  if (currentIndex + 1 >= unlockedCount) { nextBtn.classList.add('disabled'); } else nextBtn.classList.remove('disabled');
+}
+function updateProgress(){
+  if (!playerAudio.duration || isNaN(playerAudio.duration)) {
+    progressFill.style.width = '0%';
+    progressMarker.style.left = '0%';
+    timeLeftEl.textContent = '00:00';
+    timeRightEl.textContent = secToTime(playerAudio.duration || 0);
+    return;
+  }
+  const pct = (playerAudio.currentTime / playerAudio.duration) * 100;
+  progressFill.style.width = pct + '%';
+  progressMarker.style.left = pct + '%';
+  timeLeftEl.textContent = secToTime(playerAudio.currentTime);
+}
+playerAudio.addEventListener('timeupdate', updateProgress);
+progressBar.addEventListener('click', (e)=>{
+  if (!playerAudio.duration) return;
+  const rect = progressBar.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const pct = Math.max(0, Math.min(1, x / rect.width));
+  playerAudio.currentTime = pct * playerAudio.duration;
+  updateProgress();
+});
+let dragging = false;
+progressMarker.addEventListener('mousedown', (e)=>{ e.preventDefault(); dragging = true; });
+window.addEventListener('mousemove', (e)=>{
+  if (!dragging || !playerAudio.duration) return;
+  const rect = progressBar.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
+  const pct = x / rect.width;
+  progressMarker.style.left = (pct*100) + '%';
+  progressFill.style.width = (pct*100) + '%';
+  playerAudio.currentTime = pct * playerAudio.duration;
+});
+window.addEventListener('mouseup', ()=> { dragging = false; });
+progressMarker.addEventListener('touchstart', ()=>{ dragging = true; }, {passive:true});
+window.addEventListener('touchmove', (e)=>{
+  if (!dragging || !playerAudio.duration) return;
+  const touch = e.touches[0];
+  const rect = progressBar.getBoundingClientRect();
+  const x = Math.max(0, Math.min(rect.width, touch.clientX - rect.left));
+  const pct = x / rect.width;
+  progressMarker.style.left = (pct*100) + '%';
+  progressFill.style.width = (pct*100) + '%';
+  playerAudio.currentTime = pct * playerAudio.duration;
+}, {passive:true});
+window.addEventListener('touchend', ()=> { dragging = false; });
+
+/* === Ротация фраз в h1: один элемент, отдельные fade-in/out и настраиваемый интервал === */
+const MOBILE_BP = 600; // px — всё <= 600 считаем телефоном
+const isMobile = () => window.matchMedia(`(max-width:${MOBILE_BP}px)`).matches;
+
+/* === Каждая фраза со своими стилями для ПК и телефона === */
+const phrases = [
+  { text: "Я люблю тебя <З",
+    pc:  { size: 64, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 42, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "У тебя всё получится",
+    pc:  { size: 62, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 40, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Ты большая молодец, я тобой горжусь <З",
+    pc:  { size: 58, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 38, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Улыбайся чаще моё сокровище, ты прекрасна!",
+    pc:  { size: 56, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 36, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Нет ничего красивее твоей улыбки)",
+    pc:  { size: 60, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 40, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Как бы ни было трудно и сложно - ты моё солнышко. Я люблю тебя <З",
+    pc:  { size: 44, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 30, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Для самой маленькой и любимой принцессы..",
+    pc:  { size: 60, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 40, weight: 900, color: "#FFFFFF", align: "left" } },
+  { text: "Ты знала, что самая милая булочка на планете сейчас читает этот текст???",
+    pc:  { size: 46, weight: 900, color: "#FFFFFF", align: "center" },
+    mob: { size: 32, weight: 900, color: "#FFFFFF", align: "left" } },
+];
+const hero = document.getElementById('hero');
+let phraseIdx = 0;
+let rotTimer = null;
+let rotIntervalMs = 7_000; // по умолчанию 1.5 минуты
+
+
+/* === Применение стилей текущей фразы (без авто-подбора) === */
+function applyCurrentPhrase(){
+  const ph = phrases[phraseIdx];
+  const cfg = isMobile() ? (ph.mob || ph.pc) : (ph.pc || ph.mob);
+  hero.innerHTML = ph.text || '';
+  hero.style.fontSize   = (cfg.size   ?? 56) + 'px';
+  hero.style.fontWeight = (cfg.weight ?? 900);
+  hero.style.color      = (cfg.color  || '#FFF');
+  hero.style.textAlign  = isMobile() ? (cfg.align || 'left') : 'center'; /* принудительно центр на ПК */
+}
+
+function rotateHero(){
+  hero.classList.add('fade-out'); // затухаем (использует --h1-fade-out)
+  const outMs = parseTime(getComputedStyle(document.documentElement).getPropertyValue('--h1-fade-out'));
+  setTimeout(()=>{
+    phraseIdx = (phraseIdx + 1) % phrases.length;
+    applyCurrentPhrase();
+    hero.classList.remove('fade-out'); // проявляемся (использует --h1-fade-in)
+    }, outMs);
+}
+
+/* Переприменять стили при смене ширины */
+try {
+  const mq = window.matchMedia(`(max-width:${MOBILE_BP}px)`);
+  if (mq.addEventListener) mq.addEventListener('change', applyCurrentPhrase);
+  else if (mq.addListener) mq.addListener(applyCurrentPhrase);
+  window.addEventListener('orientationchange', applyCurrentPhrase);
+} catch(_) {}
+
+function startRotation(){
+  stopRotation();
+  rotTimer = setInterval(rotateHero, rotIntervalMs);
+}
+function stopRotation(){
+  if (rotTimer){ clearInterval(rotTimer); rotTimer = null; }
+}
+function parseTime(str){
+  const s = String(str).trim();
+  if (s.endsWith('ms')) return parseFloat(s);
+  if (s.endsWith('s')) return parseFloat(s)*1000;
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : 420;
+}
+
+/* ====== Публичные ручки для h1 ====== */
+window.setH1Style = (size, weight)=>{
+  if (size) document.documentElement.style.setProperty('--h1-size', String(size));
+  if (weight) document.documentElement.style.setProperty('--h1-weight', String(weight));
+};
+window.setH1Margins = (mt, mb)=>{
+  if (mt) document.documentElement.style.setProperty('--h1-mt', String(mt));
+  if (mb) document.documentElement.style.setProperty('--h1-mb', String(mb));
+};
+window.setH1MobileLeft = (px)=>{
+  if (px!=null) document.documentElement.style.setProperty('--h1-mobile-left', String(px));
+};
+window.setH1Fade = (fadeIn, fadeOut)=>{
+  if (fadeIn) document.documentElement.style.setProperty('--h1-fade-in', String(fadeIn));
+  if (fadeOut) document.documentElement.style.setProperty('--h1-fade-out', String(fadeOut));
+};
+window.setH1Interval = (ms)=>{
+  if (!Number.isFinite(ms)) return;
+  rotIntervalMs = ms;
+  startRotation();
+};
+
+
+/* ==== Drag-to-close on touch (mobile) ==== */
+const __isTouchDevice = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
+let __dragging = false, __startY = 0, __curPct = 0, __raf = 0;
+
+function __applyDragFrame(pct){
+  sheet.style.transform = `translateY(${pct*100}%)`;
+}
+
+function __onDown(e){
+  if (!__isTouchDevice) return;
+  if (overlay.dataset.state !== 'open') return;
+  __dragging = true;
+  __startY = ('touches' in e) ? e.touches[0].clientY : e.clientY;
+  __curPct = 0;
+  sheet.style.transition = 'none';
+}
+
+function __onMove(e){
+  if (!__dragging || !__isTouchDevice) return;
+  const y = ('touches' in e) ? e.touches[0].clientY : e.clientY;
+  const dy = y - __startY;
+  const height = sheet.getBoundingClientRect().height || 1;
+  const pct = Math.max(0, Math.min(1, dy / height));
+  __curPct = pct;
+  if (!__raf){
+    __raf = requestAnimationFrame(()=>{ __applyDragFrame(__curPct); __raf = 0; });
+  }
+}
+
+function __onUp(){
+  if (!__dragging || !__isTouchDevice) return;
+  __dragging = false;
+  sheet.style.transition = `transform var(--sheet-close-duration) var(--sheet-ease)`;
+  const willClose = (__curPct > 0.18); // порог ~18%
+  if (willClose){
+    sheet.style.transform = 'translateY(100%)';
+    overlay.dataset.state = 'closed';
+    overlay.setAttribute('aria-hidden','true');
+    sheet.addEventListener('transitionend', ()=>{ sheet.style.transition=''; sheet.style.transform=''; }, { once:true });
+    try{ playerAudio.pause(); isPlaying=false; updatePlayGlyph(); }catch(_){}
+  } else {
+    sheet.style.transform = 'translateY(0%)';
+    sheet.addEventListener('transitionend', ()=>{ sheet.style.transition=''; sheet.style.transform=''; }, { once:true });
+  }
+}
+
+sheet.addEventListener('touchstart', __onDown, {passive:true});
+window.addEventListener('touchmove', __onMove, {passive:true});
+window.addEventListener('touchend', __onUp);
+
+/* INIT */
+render();
+tick();
+startRotation();
+</script>
+</body>
+</html>
