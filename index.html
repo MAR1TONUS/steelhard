@@ -8,10 +8,21 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+
+/* UX: remove orange highlight/outline on tap/focus for interactive elements */
+html, body { -webkit-tap-highlight-color: transparent; }
+:where(a, button, [tabindex]) { outline: none; }
+:where(a, button, [tabindex]):focus,
+:where(a, button, [tabindex]):focus-visible { outline: none; box-shadow: none; }
+
+/* Perf: hint composition to smooth transform animation of the sheet */
+.sheet { will-change: transform; transform: translateZ(0); }
+.overlay { transform: translateZ(0); }
+
+
   @font-face {
   font-family: "Bebas Neue Pro";
-  src: url("fonts\Bebas Neue Pro Bold.woff2") format("woff2"),
-       url("fonts\Bebas Neue Pro Bold.woff2") format("woff");
+  src: url("./fonts/BebasNeuePro_Bold.woff2") format("woff2");
   font-weight: 700;
   font-style: normal;
   font-display: swap;
@@ -19,17 +30,14 @@
 
 @font-face {
   font-family: "Bebas Neue Pro";
-  src: url("fonts\Bebas Neue Pro Regular.woff2") format("woff2"),
-       url("fonts\Bebas Neue Pro Regular.woff2") format("woff");
-  font-weight: 400;
+  src: url("./fonts/BebasNeuePro_Regular.woff2") format("woff2");
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
   font-family: "Bebas Neue Pro";
-  src: url("fonts\Bebas Neue Pro Light.woff2") format("woff2"),
-       url("fonts\Bebas Neue Pro Light.woff2") format("woff");
+  src: url("./fonts/BebasNeuePro_Light.woff2") format("woff2");
   font-weight: 300;
   font-style: normal;
   font-display: swap;
@@ -57,7 +65,7 @@
     --divider-bottom: 12px;
 
     --t-title-size: 13px;
-    --t-title-weight: 700;
+    --t-title-weight: 650;
     --t-title-color: #DBDADA;
 
     --t-chapter-size: 12px;
@@ -166,7 +174,7 @@
     </div>
 
     <div class="tracks" id="tracks">
-      <article class="track">
+      <article class="track" data-title="Трек 1" data-part="Глава 1" data-src="audio/01.mp3" data-cover="img/01.jpg">
         <div class="track-left">
           <div class="track-title" data-title>Джон мщу-за-всех</div>
           <div class="track-chapter">Пролог</div>
@@ -176,7 +184,7 @@
 
       <div class="divider"></div>
 
-      <article class="track">
+      <article class="track" data-title="Трек 2" data-part="Глава 2" data-src="audio/02.mp3" data-cover="img/02.jpg">
         <div class="track-left">
           <div class="track-title" data-title>Джон мщу-за-всех</div>
           <div class="track-chapter">Пролог</div>
@@ -191,35 +199,7 @@
       <div class="divider"></div>
     </div>
 
-    <section id="player" class="player">
-      <div class="header">
-        <div class="light"></div>
-        <object class="svg-player" type="image/svg+xml" data="SVG_player.svg" aria-label="Шапка трека"></object>
-      </div>
-
-      <h2 id="plTitle">Часть: Тайны замка Тансгет</h2>
-      <p class="chapter" id="plChapter">Глава 2</p>
-
-      <div class="progress" id="progress">
-        <div class="progress__bar" id="progressBar"></div>
-      </div>
-      <div class="time">
-        <span id="curTime">00:00</span>
-        <span id="durTime">00:00</span>
-      </div>
-
-      <div class="controls">
-        <button class="btn" id="btnPrev" title="Prev" aria-label="Prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 12L19 4v16L7 12Z"></path><path d="M5 4v16"></path></svg></button>
-        <button class="btn" id="btnRew" title="Rewind -15s" aria-label="Rewind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 12 20 6v12l-9-6Z"></path><path d="M4 12l9-6v12l-9-6Z"></path></svg></button>
-        <button class="btn" id="btnPlay" title="Play/Pause" aria-label="Play"><svg id="iconPlay" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 5v14l11-7-11-7Z"></path></svg></button>
-        <button class="btn" id="btnStop" title="Stop" aria-label="Stop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg></button>
-        <button class="btn" id="btnFwd" title="Fast fw +30s" aria-label="Fast fw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 12 4 6v12l9-6Z"></path><path d="M20 12l-9-6v12l9-6Z"></path></svg></button>
-        <button class="btn" id="btnNext" title="Next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 12 5 20V4l12 8Z"></path><path d="M19 4v16"></path></svg></button>
-      </div>
-
-      <audio id="audio" preload="metadata"><source src="" type="audio/mpeg" /></audio>
     </section>
-  </section>
 </main>
 
 <script>
@@ -269,7 +249,7 @@
   });
   document.body.appendChild(ruler);
 
-  document.querySelectorAll('[data-title]').forEach(el=>{
+  document.querySelectorAll('.track-title[data-title]').forEach(el=>{
     const maxW = parseFloat(getCSS('--track-title-maxw'));
     const txt = el.textContent.trim().replace(/\s+/g,' ');
     el.setAttribute('title', txt);
@@ -299,37 +279,404 @@
   });
 })();
 
-(() =>{
-  const audio = document.getElementById('audio');
-  const progress = document.getElementById('progress');
-  const bar = document.getElementById('progressBar');
-  const cur = document.getElementById('curTime');
-  const dur = document.getElementById('durTime');
+</script>
+<!-- === AUDIO SHEET v3 (Shadow DOM, fast re-open, -15/+30 skip) === -->
+<script>
+(() => {
+  // Simple state machine
+  const State = { IDLE:0, OPENING:1, OPEN:2, CLOSING:3 };
 
-  const btnPlay = document.getElementById('btnPlay');
-  const btnStop = document.getElementById('btnStop');
-  const btnPrev = document.getElementById('btnPrev');
-  const btnNext = document.getElementById('btnNext');
-  const btnRew  = document.getElementById('btnRew');
-  const btnFwd  = document.getElementById('btnFwd');
+  class AudioSheet extends HTMLElement {
+    constructor(){
+      super();
+      this._state = State.IDLE;
+      const root = this.attachShadow({mode:'open'});
+      root.innerHTML = `
+        <style>
+          :host { all: initial; }
+          :host{ --sheet-max-w: 700px; --sheet-radius-top: 18px; --sheet-radius-current: var(--sheet-radius-top); }
+          :host, * { box-sizing: border-box; }
+          .overlay { position: fixed; inset: 0; display: grid; align-content: end; justify-items: center;
+                     background: transparent; backdrop-filter: none; pointer-events: none; z-index: 999999;
+                     transition: background 160ms linear; }
+          .overlay.open { background: rgba(7,6,8,0.55); backdrop-filter: blur(8px); pointer-events: auto; }
 
-  const fmt = t=>{ if(!isFinite(t)) t=0; const m = Math.floor(t/60), s = Math.floor(t%60); return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); };
+          .sheet { width: 100vw; height: 100dvh; box-sizing: border-box;
+                   background: rgba(33,33,33,.9); color: #F3F2F7;
+                   border-radius: 0 0 0 0;
+                   box-shadow: 0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset; overflow:hidden;
+                   padding: clamp(16px,3.2vw,36px) clamp(16px,3.2vw,40px) calc(clamp(16px,3.2vw,40px) + env(safe-area-inset-bottom));
+                   display: flex; flex-direction: column; gap: clamp(12px,2.2vw,20px);
+                   transform: translateY(100%);
+                   transition: transform var(--open-dur, 250ms) cubic-bezier(.2,.9,.2,1);
+                   touch-action: none; will-change: transform, border-radius; }
 
-  audio.addEventListener('loadedmetadata', ()=> dur.textContent = fmt(audio.duration));
-  audio.addEventListener('timeupdate', ()=>{ cur.textContent = fmt(audio.currentTime); bar.style.width = ((audio.currentTime/(audio.duration||1))*100)+'%'; });
+          .cover { height: clamp(290px, 32vw, 390px); display:grid; place-items:center; margin-top: clamp(24px,8vh,120px); }
+          .img { width: clamp(282px, 32vw, 382px); height: clamp(282px, 32vw, 382px);
+                 background:#C4C4C4 center/cover no-repeat;
+                 border-radius: clamp(10px,1.4vw,16px); box-shadow: 0 6px 22px rgba(0,0,0,.4); overflow:hidden; }
 
-  progress.addEventListener('click', e=>{
-    const r = progress.getBoundingClientRect();
-    audio.currentTime = ((e.clientX - r.left)/r.width) * (audio.duration||0);
+          .meta { text-align: center; }
+          .title { position:relative; font: 800 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                   color:#fff; height:1.25em; white-space:nowrap; overflow:hidden;
+                   -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+                           mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%); }
+          .title .track { display:inline-flex; gap:24px; will-change: transform; }
+          .title.marquee .track { animation: marquee var(--dur, 14s) linear infinite; }
+          @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(calc(-1 * var(--dist, 0px))) } }
+          .author { color:#BDBDBD; font: 700 clamp(14px,1.8vw,18px)/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+
+          .progress-wrap{ width:min(100%, clamp(305px, 60vw, 475px)); margin: 0 auto; }
+          .bar{ height:5px; background:rgba(255,255,255,.14); border-radius:999px; position:relative; }
+          .fill{ height:100%; width:0%; background:#fff; border-radius:999px; transition: width .18s linear; }
+          .time{ display:flex; justify-content:space-between; color:#BEBEBE; font: 600 12px system-ui; margin-top:6px; }
+
+          .controls{ display:flex; gap: clamp(22px,2vw,28px); justify-content:center; align-items:center; margin:46px 0 6px; flex-wrap: nowrap; }
+          .btn{ all: unset; width: clamp(39px,6vw,48px); height: clamp(39px,6vw,48px); border-radius: 999px; display:grid; place-items:center; cursor:pointer; }
+          .btn.play{ width: clamp(61px,7vw,73px); height: clamp(61px,7vw,73px); }
+          .glyph{ width:100%; height:100%; background-repeat:no-repeat; background-position:center; background-size:contain; }
+
+          /* temp icons */
+          .icon-play{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='52' height='52' fill='none'><ellipse cx='26' cy='26' rx='26' ry='26' fill='%23FFF'/><path fill='%23282729' d='M20 18v16l16-8-16-8Z'/></svg>"); }
+          .icon-pause{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='52' height='52' fill='none'><ellipse cx='26' cy='26' rx='26' ry='26' fill='%23FFF'/><g fill='%23282729'><rect x='19' y='16' width='6' height='20' rx='2'/><rect x='27' y='16' width='6' height='20' rx='2'/></g></svg>"); }
+          .icon-prev{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='none'><g fill='%23FFF'><path d='M16 6v16L4 14l12-8Z'/><rect x='20' y='6' width='2' height='16' rx='1'/></g></svg>"); }
+          .icon-next{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='none'><g fill='%23FFF'><path d='M12 22V6l12 8-12 8Z'/><rect x='6' y='6' width='2' height='16' rx='1'/></g></svg>"); }
+          .icon-back15{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' fill='none'><circle cx='22' cy='22' r='22' fill='rgba(255,255,255,.18)'/><path stroke='%23FFF' stroke-width='2' d='M18 16l-6 6 6 6'/><text x='24' y='26' fill='%23FFF' font-family='Arial' font-size='10' font-weight='700'>15</text></svg>"); }
+          .icon-fwd30{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' fill='none'><circle cx='22' cy='22' r='22' fill='rgba(255,255,255,.18)'/><path stroke='%23FFF' stroke-width='2' d='M26 16l6 6-6 6'/><text x='10' y='26' fill='%23FFF' font-family='Arial' font-size='10' font-weight='700'>30</text></svg>"); }
+        </style>
+        <div class="overlay" aria-hidden="true">
+          <div class="sheet" role="dialog" aria-label="Аудиоплеер">
+            <div class="cover"><div class="img" id="cover" aria-hidden="true"></div></div>
+            <div class="meta">
+              <div class="title" id="title"><span>Название</span></div>
+              <div class="author" id="author">Автор</div>
+            </div>
+            <div class="progress-wrap">
+              <div class="bar"><div class="fill" id="fill"></div></div>
+              <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
+            </div>
+            <div class="controls">
+              <button class="btn" id="prev"><div class="glyph icon-prev"></div></button>
+              <button class="btn" id="back15" title="-15 сек"><div class="glyph icon-back15"></div></button>
+              <button class="btn play" id="pp"><div class="glyph icon-play" id="glyph"></div></button>
+              <button class="btn" id="fwd30" title="+30 сек"><div class="glyph icon-fwd30"></div></button>
+              <button class="btn" id="next"><div class="glyph icon-next"></div></button>
+            </div>
+            <audio id="audio" preload="metadata"></audio>
+          </div>
+        </div>
+      `;
+
+      // refs
+      const $o = this.$o = root.querySelector('.overlay');
+      const $s = this.$s = root.querySelector('.sheet');
+      this.$title = root.querySelector('#title');
+      this.$author = root.querySelector('#author');
+      this.$cover = root.querySelector('#cover');
+      this.$fill = root.querySelector('#fill');
+      this.$cur = root.querySelector('#cur');
+      this.$dur = root.querySelector('#dur');
+      this.$pp = root.querySelector('#pp');
+      this.$glyph = root.querySelector('#glyph');
+      this.$prev = root.querySelector('#prev');
+      this.$next = root.querySelector('#next');
+      this.$back15 = root.querySelector('#back15');
+      this.$fwd30 = root.querySelector('#fwd30');
+      this.$audio = root.querySelector('#audio');
+
+      
+
+      
+      // Helper: parse CSS time like '570ms' or '0.57s' to ms
+      const _parseMs = (v)=>{
+        v = String(v||'').trim();
+        if (!v) return 570;
+        if (v.endsWith('ms')) return Math.max(1, parseFloat(v));
+        if (v.endsWith('s'))  return Math.max(1, parseFloat(v) * 1000);
+        const n = parseFloat(v); return isFinite(n) ? Math.max(1, n) : 570;
+      };
+      const _getOpenDurMs = ()=> _parseMs(getComputedStyle(this.$s).getPropertyValue('--open-dur'));
+// === Radius config & helper ===
+      this.R_OPEN =  0;
+      if (!isFinite(this.R_OPEN)) this.R_OPEN = 18;
+      this.R_CLOSED =  0;
+      if (!isFinite(this.R_CLOSED)) this.R_CLOSED = 18;
+      this.setRadiusByPct = (pct)=>{ /* no-op: rounding removed */ };
+// state
+      this.playlist = [];
+      this.index = 0;
+      this._playing = false;
+
+      // helpers
+      const sec = (s)=>{ if(!isFinite(s)) return "00:00"; s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), ss=String(s%60).padStart(2,'0'); return `${String(m).padStart(2,'0')}:${ss}`; };
+      const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+      // audio events
+      this.$audio.addEventListener('loadedmetadata', ()=> {
+        this.$dur.textContent = sec(this.$audio.duration);
+        this.renderProgress();
+      });
+      this.$audio.addEventListener('timeupdate', ()=> this.renderProgress());
+      this.$audio.addEventListener('play', ()=>{ this._playing = true; this.$glyph.classList.remove('icon-play'); this.$glyph.classList.add('icon-pause'); });
+      this.$audio.addEventListener('pause', ()=>{ this._playing = false; this.$glyph.classList.add('icon-play'); this.$glyph.classList.remove('icon-pause'); });
+      this.$audio.addEventListener('ended', ()=>{ this._playing = false; this.$glyph.classList.add('icon-play'); this.$glyph.classList.remove('icon-pause'); });
+
+      // controls
+      this.$pp.addEventListener('click', ()=> {
+        if (!this.$audio.src) return;
+        if (this._playing) this.$audio.pause(); else this.$audio.play().catch(()=>{});
+      });
+      this.$prev.addEventListener('click', ()=> { if(this.index>0){ this.loadByIndex(this.index-1); } });
+      this.$next.addEventListener('click', ()=> { if(this.index+1<this.playlist.length){ this.loadByIndex(this.index+1); } });
+      this.$back15.addEventListener('click', ()=> {
+        if (!this.$audio.src || !isFinite(this.$audio.duration)) return;
+        this.$audio.currentTime = clamp(this.$audio.currentTime - 15, 0, this.$audio.duration);
+        this.renderProgress();
+      });
+      this.$fwd30.addEventListener('click', ()=> {
+        if (!this.$audio.src || !isFinite(this.$audio.duration)) return;
+        this.$audio.currentTime = clamp(this.$audio.currentTime + 30, 0, this.$audio.duration);
+        this.renderProgress();
+      });
+
+      // Close handlers
+      $o.addEventListener('click', (e)=> { if (this._openedAt && (performance.now() - this._openedAt) < 350) return; if (e.target === $o) this.close(); });
+      window.addEventListener('keydown', (e)=> { if (e.key === 'Escape') this.close(); });
+
+      // Drag-to-close
+      let dragging=false, startY=0, curPct=0;
+      const onDown = (e)=>{
+      dragging=true; 
+      startY=('touches'in e?e.touches[0].clientY:e.clientY);
+      // show rounding at drag start
+      $s.style.transition='border-radius 120ms linear, transform 260ms cubic-bezier(.2,.9,.2,1)';
+      this.$s.style.setProperty('--sheet-radius-current', getComputedStyle(this).getPropertyValue('--sheet-open-radius') || '18px');
+    };
+      const onMove = (e)=>{
+      if(!dragging) return;
+      const y=('touches'in e?e.touches[0].clientY:e.clientY);
+      const dy=y-startY, h=$s.getBoundingClientRect().height||1;
+      const pct=Math.max(0, Math.min(1, dy/h)); curPct=pct;
+      $s.style.transform = `translateY(${pct*100}%)`;
+      // keep rounding constant during drag
+    };
+      const onUp = ()=>{
+      if(!dragging) return; dragging=false;
+      $s.style.transition='transform 260ms cubic-bezier(.2,.9,.2,1)';
+      const willClose = (curPct > 0.06);
+      if (willClose){
+        // close via component logic (removes blur and resets vars)
+        this._hideOverlay();
+      } else {
+        // snap back open and remove rounding fast
+        $s.style.transform='translateY(0%)';
+        this.$s.style.setProperty('--sheet-radius-current', '0px');
+      }
+    };
+      $s.addEventListener('touchstart', onDown, {passive:true});
+      window.addEventListener('touchmove', onMove, {passive:true});
+      window.addEventListener('touchend', onUp);
+
+      // progress render
+      this.renderProgress = ()=>{
+        if (!isFinite(this.$audio.duration) || this.$audio.duration<=0){
+          this.$fill.style.width = "0%";
+          this.$cur.textContent = "00:00";
+          return;
+        }
+        const pct = (this.$audio.currentTime / this.$audio.duration) * 100;
+        this.$fill.style.width = pct + "%";
+        this.$cur.textContent = sec(this.$audio.currentTime);
+      };
+
+      // ensure initial CSS values
+      this._resetSheetInstant();
+    }
+
+    _resetSheetInstant(){
+      // reset transform without animating
+      this.$s.style.transition = 'none';
+      this.$s.style.transform = 'translateY(100%)';}
+
+    _showOverlay(){
+      if (this._state === State.OPEN || this._state === State.OPENING) return;
+      this._state = State.OPENING;
+      // show overlay immediately; start anim next frame
+      this.$o.classList.add('open');
+      this.$o.setAttribute('aria-hidden','false');
+      // two RAFs to ensure styles apply before transition
+      requestAnimationFrame(()=>{
+        this.$s.style.transition = 'transform var(--open-dur, 570ms) cubic-bezier(.2,.9,.2,1)';
+        this.$s.style.transform = 'translateY(0%)';this._openedAt = performance.now();
+        // reference: fully-open sheet has no rounding
+        this.$s.style.setProperty('--sheet-radius-current', '0px');
+        
+        // (radius schedule removed to follow reference mechanics)this._openedAt = performance.now();
+        // set state to OPEN when transition ends (guarded)
+        const onEnd = () => { this._state = State.OPEN; this.$s.removeEventListener('transitionend', onEnd); };
+        this.$s.addEventListener('transitionend', onEnd);
+      });
+    }
+
+    _hideOverlay(){
+      // animate out first, then hide overlay and reset
+      if (this._state !== State.OPEN && this._state !== State.OPENING) return;
+      this._state = State.CLOSING;
+      this.$s.style.transition = 'transform 320ms cubic-bezier(.2,.9,.2,1)';
+      this.$s.style.transform = 'translateY(100%)';
+      const onEnd = () => {
+        this.$o.classList.remove('open');
+        this.$o.setAttribute('aria-hidden','true');
+        this.$audio.pause();
+        this._playing = false;
+        this._resetSheetInstant();
+        this._state = State.IDLE;
+        this.$s.removeEventListener('transitionend', onEnd);
+      };
+      this.$s.addEventListener('transitionend', onEnd);
+    }
+
+    setPlaylist(list, startIndex=0){
+      this.playlist = Array.isArray(list) ? list : [];
+      this.index = Math.min(Math.max(0, startIndex|0), Math.max(this.playlist.length-1,0));
+      // nav buttons state could be updated here if we dim them in future
+    }
+
+    load(track){
+      const t = track || this.playlist[this.index] || {};
+      const title = t.partTitle || t.title || 'Без названия';
+      const author = t.partLabel || t.author || '';
+      // title marquee
+      this.$title.classList.remove('marquee');
+      this.$title.innerHTML = '';
+      const tr = document.createElement('div'); tr.className = 'track';
+      const s1 = document.createElement('span'); s1.textContent = title;
+      const s2 = document.createElement('span'); s2.textContent = title; s2.setAttribute('aria-hidden','true');
+      tr.appendChild(s1); tr.appendChild(s2); this.$title.appendChild(tr);
+      requestAnimationFrame(()=>{
+        const boxW = this.$title.clientWidth, textW = s1.scrollWidth;
+        if (textW > boxW + 2){
+          const gap = 24; this.$title.style.setProperty('--dist', (textW + gap) + 'px');
+          const duration = Math.max(8, (textW + gap) / 18); this.$title.style.setProperty('--dur', duration + 's');
+          this.$title.classList.add('marquee');
+        } else {
+          this.$title.classList.remove('marquee'); this.$title.textContent = title;
+        }
+      });
+      this.$author.textContent = author || '';
+      this.$cover.style.backgroundImage = t.cover ? `url("${t.cover.replace(/"/g,'\\"')}")` : 'none';
+      this.$audio.src = t.src || '';
+    }
+
+    open(track){
+      // prepare data
+      if (track) this.load(track); else this.load();
+      // fast reaction: ensure we reset then show overlay asap
+      this._resetSheetInstant();
+      this._showOverlay();
+    }
+
+    close(){ this._hideOverlay(); }
+  }
+
+  customElements.define('x-audio-sheet', AudioSheet);
+
+  // Mount single instance
+  const sheetEl = document.createElement('x-audio-sheet');
+  document.documentElement.appendChild(sheetEl);
+
+  // Public API
+  window.AudioSheet = {
+    open: (track) => sheetEl.open(track),
+    setPlaylist: (list, i) => sheetEl.setPlaylist(list, i),
+  };
+
+  // ====== Binding: fast pointerdown on active cards ======
+  function getMeta(node){
+    const title = node.getAttribute('data-title')
+              || node.querySelector('.track-title')?.textContent?.trim()
+              || node.textContent?.trim()
+              || 'Аудио';
+    const label = node.getAttribute('data-part') 
+              || node.querySelector('.track-chapter')?.textContent?.trim()
+              || '';
+    const src = node.getAttribute('data-src') || '';
+    const cover = node.getAttribute('data-cover') || '';
+    return { partTitle: title, partLabel: label, src, cover };
+  }
+
+  const OPEN_SELECTOR = '.track, [data-open-player]';
+
+  // Fast reaction: pointerdown; fallback: keydown/Enter Space; click for legacy
+  document.addEventListener('pointerdown', (ev) => {
+    const n = ev.target.closest(OPEN_SELECTOR);
+    if (!n) return;
+    if (n.getAttribute('data-active') === '0') return;
+    // prevent accidental text selection on long press
+    const meta = getMeta(n);
+    window.AudioSheet.open(meta);
   });
 
-  btnPlay.addEventListener('click', ()=> { if(audio.paused) audio.play(); else audio.pause(); });
-  btnStop.addEventListener('click', ()=> { audio.pause(); audio.currentTime = 0; });
-  btnRew .addEventListener('click', ()=> audio.currentTime = Math.max(0, audio.currentTime - 15));
-  btnFwd .addEventListener('click', ()=> audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 30));
-  btnPrev.addEventListener('click', ()=> {});
-  btnNext.addEventListener('click', ()=> {});
+  document.addEventListener('keydown', (ev) => {
+    if (ev.key !== 'Enter' && ev.key !== ' ') return;
+    const n = ev.target.closest(OPEN_SELECTOR);
+    if (!n) return;
+    if (n.getAttribute('data-active') === '0') return;
+    ev.preventDefault();
+    const meta = getMeta(n);
+    window.AudioSheet.open(meta);
+  });
+
+  // Keep legacy click but it usually fires after pointerdown; this is harmless
+  document.addEventListener('pointerdown', (ev) => {
+    const n = ev.target.closest(OPEN_SELECTOR);
+    if (!n) return;
+    if (n.getAttribute('data-active') === '0') return;
+    if (n.tagName === 'A') ev.preventDefault();
+  });
 })();
 </script>
+<script>
+(function(){
+  function openFromCard(card){
+    const meta = {
+      partTitle: card.getAttribute('data-title') || card.querySelector('.track-title')?.textContent?.trim() || 'Без названия',
+      partLabel: card.getAttribute('data-part')  || card.querySelector('.track-chapter')?.textContent?.trim() || '',
+      src: card.getAttribute('data-src') || '',
+      cover: card.getAttribute('data-cover') || ''
+    };
+    if (!meta.src) return;
+    if (window.AudioSheet && typeof window.AudioSheet.open === 'function'){
+      window.AudioSheet.open(meta);
+    } else {
+      console.error('[AudioSheet] Глобальный объект не найден. Проверь загрузку скрипта компонента.');
+    }
+  }
+
+  function bind(){
+    document.querySelectorAll('.track[data-src]').forEach(card => {
+      // avoid double-binding
+      if (card.__xa_bound) return;
+      card.__xa_bound = true;
+      card.addEventListener('pointerdown', () => openFromCard(card));
+      card.addEventListener('click', () => openFromCard(card));
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFromCard(card); }
+      });
+      card.tabIndex = card.tabIndex || 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', (card.getAttribute('data-title')||'Открыть аудиоплеер'));
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bind);
+  } else {
+    bind();
+  }
+})();
+</script>
+
+
 </body>
 </html>
