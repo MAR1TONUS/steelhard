@@ -135,7 +135,7 @@ html, body { -webkit-tap-highlight-color: transparent; }
 
   .tracks{ width:100%; }
   .divider{ width:var(--divider-width); height:var(--divider-thickness); background:var(--divider-color); margin:var(--divider-top) auto var(--divider-bottom); }
-  .track{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .track{ touch-action: pan-y;  position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; }
   .track-left{ min-width:0; padding-left:var(--track-text-offset); }
   .track-title{ max-width:var(--track-title-maxw); font-size:var(--t-title-size); font-weight:var(--t-title-weight); color:var(--t-title-color); line-height:1.25; }
   .track-chapter{ margin-top:2px; font-size:var(--t-chapter-size); font-weight:var(--t-chapter-weight); color:var(--t-chapter-color); }
@@ -609,33 +609,8 @@ html, body { -webkit-tap-highlight-color: transparent; }
   const OPEN_SELECTOR = '.track, [data-open-player]';
 
   // Fast reaction: pointerdown; fallback: keydown/Enter Space; click for legacy
-  document.addEventListener('pointerdown', (ev) => {
-    const n = ev.target.closest(OPEN_SELECTOR);
-    if (!n) return;
-    if (n.getAttribute('data-active') === '0') return;
-    // prevent accidental text selection on long press
-    const meta = getMeta(n);
-    window.AudioSheet.open(meta);
-  });
-
-  document.addEventListener('keydown', (ev) => {
-    if (ev.key !== 'Enter' && ev.key !== ' ') return;
-    const n = ev.target.closest(OPEN_SELECTOR);
-    if (!n) return;
-    if (n.getAttribute('data-active') === '0') return;
-    ev.preventDefault();
-    const meta = getMeta(n);
-    window.AudioSheet.open(meta);
-  });
-
   // Keep legacy click but it usually fires after pointerdown; this is harmless
-  document.addEventListener('pointerdown', (ev) => {
-    const n = ev.target.closest(OPEN_SELECTOR);
-    if (!n) return;
-    if (n.getAttribute('data-active') === '0') return;
-    if (n.tagName === 'A') ev.preventDefault();
-  });
-})();
+  })();
 </script>
 <script>
 (function(){
@@ -659,9 +634,40 @@ html, body { -webkit-tap-highlight-color: transparent; }
       // avoid double-binding
       if (card.__xa_bound) return;
       card.__xa_bound = true;
-      card.addEventListener('pointerdown', () => openFromCard(card));
-      card.addEventListener('click', () => openFromCard(card));
-      card.addEventListener('keydown', (e) => {
+      
+      // Safe tap: short touch without movement -> open player
+      (function attachSafeTap(node){
+        const TAP_MAX_TIME = 350; // ms
+        const TAP_MAX_MOVE = 10;  // px
+        let startX=0, startY=0, startT=0, pointerId=null, moved=false;
+
+        function onDown(e){
+          if (pointerId !== null) return;
+          pointerId = e.pointerId ?? 'mouse';
+          startX = e.clientX; startY = e.clientY; startT = performance.now(); moved = false;
+          if (e.pointerId != null && node.setPointerCapture) { try { node.setPointerCapture(e.pointerId); } catch(_){} }
+        }
+        function onMove(e){
+          if (pointerId === null) return;
+          const dx = Math.abs(e.clientX - startX);
+          const dy = Math.abs(e.clientY - startY);
+          if (dx > TAP_MAX_MOVE || dy > TAP_MAX_MOVE) moved = true;
+        }
+        function onUp(e){
+          if (pointerId === null) return;
+          const dt = performance.now() - startT;
+          const isTap = !moved && dt <= TAP_MAX_TIME;
+          pointerId = null;
+          if (isTap) openFromCard(node);
+        }
+        function onCancel(){ pointerId = null; }
+
+        node.addEventListener('pointerdown', onDown, {passive:true});
+        node.addEventListener('pointermove', onMove,  {passive:true});
+        node.addEventListener('pointerup',   onUp,    {passive:true});
+        node.addEventListener('pointercancel', onCancel);
+      })(card);
+card.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openFromCard(card); }
       });
       card.tabIndex = card.tabIndex || 0;
