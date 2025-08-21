@@ -1,514 +1,324 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Сказочки — плеер с нижним слайдом</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>ЧЁРНАЯ СТРЕЛА</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+
 <style>
-:root{
-  --bg-top:#180729; --bg-bottom:#010007; --text:#F3F2F7; --muted:#cfcfcfcf;
+  @font-face{
+    font-family: "Bebas Neue Pro";
+    src: url("fonts/BebasNeuePro-Regular.woff2") format("woff2"),
+         url("fonts/BebasNeuePro-Regular.woff") format("woff");
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
+  @font-face{
+    font-family: "Bebas Neue Pro";
+    src: url("fonts/BebasNeuePro-Bold.woff2") format("woff2"),
+         url("fonts/BebasNeuePro-Bold.woff") format("woff");
+    font-weight: 700;
+    font-style: normal;
+    font-display: swap;
+  }
 
-  /* h1 / hero */
-  --h1-size: clamp(26px, 6vw, 60px);
-  --h1-weight: 600;
-  --hero-box-height: 245px;
-  --hero-pad-top: 65px; --hero-pad-right: 20px; --hero-pad-bottom: 0px; --hero-pad-left: 20px;
-  --h1-fade-in: 550ms; --h1-fade-out: 550ms;
+  :root{
+    --page-bg: #000;
+    --content-max-w: 430px;
+    --side-pad: 12px;
 
-  /* UI */
-  --pill-bg:#2b2b2b; --pill-color-label:#C6C6C6; --pill-color-time:#BFBFBF;
-  --pill-padding-v:clamp(10px,1.2vw,14px); --pill-padding-h:clamp(16px,2vw,22px);
-  --pill-radius:10px; --pill-width:min(92vw,350px);
-  --pill-font-label:clamp(12px,1.6vw,12px); --pill-font-time:clamp(11px,2.2vw,11px);
+    --title-block-w: 100%;
+    --title-top: 79px;
+    --title-bottom: 100px;
+    --title-size: 100px;
+    --title-weight: 400;
+    --title-color: #fff;
+    --title-letter-spacing: .5px;
+    --title-line-height: 0.86;
 
-  --overlay-bg:rgba(7,6,8,0.55);
-  --overlay-blur:8px; --overlay-z:1200;
+    --divider-width: 100%;
+    --divider-thickness: 2px;
+    --divider-color: #282828;
+    --divider-top: 12px;
+    --divider-bottom: 12px;
 
-  /* быстрее и ровнее */
-  --sheet-open-duration: 200ms;
-  --sheet-close-duration: 170ms;
-  --sheet-ease: cubic-bezier(.2,.9,.2,1);
-  --sheet-height: 100svh;
-  --sheet-max-width: 700px;
-  --sheet-side-padding: clamp(16px, 3.2vw, 40px);
-  --sheet-top-padding: clamp(16px, 3.2vw, 36px);
+    --t-title-size: 13px;
+    --t-title-weight: 700;
+    --t-title-color: #DBDADA;
 
-  /* радиусы: базовый и текущий (динамический) */
-  --sheet-radius-top: clamp(12px, 2vw, 22px);
-  --sheet-radius-current: var(--sheet-radius-top);
+    --t-chapter-size: 12px;
+    --t-chapter-weight: 650;
+    --t-chapter-color: #828282;
 
-  --player-bg:rgba(33, 33, 33, 0.7); backdrop-filter: blur(4px);
-  --player-color:var(--text);
-  --player-shadow:0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
-  --player-border:0px solid transparent;
+    --t-time-size: 12px;
+    --t-time-weight: 700;
+    --t-time-color: #616161;
 
-  --title-color:#FFF; --title-size:clamp(18px, 2.4vw, 28px); --title-weight:800;
-  --author-color:#BDBDBD; --author-size:clamp(14px,1.8vw,18px); --author-weight:700;
-  --cover-size-player:clamp(250px,32vw,280px); --cover-radius-player:clamp(10px,1.4vw,16px);
-  --cover-bg:#C4C4C4;
+    --track-title-maxw: 295px;
+    --track-text-offset: 5px;
 
-  /* размеры кнопок */
-  --btn-size:clamp(39px,6vw,50px);
-  --btn-size-main:clamp(61px,7vw,73px);
-  --controls-gap:clamp(34px,2vw,40px); --controls-offset-y:clamp(65px,2vw,20px); --controls-offset-bottom:6px;
+    --aff-width: 345px;
+    --aff-bg: rgba(43,43,43,.75);
+    --aff-radius: 7px;
+    --aff-border: 1px solid rgba(83, 83, 83, 0.2);
+    --aff-text-size: 13px;
+    --aff-text-weight: 750;
+    --aff-text-color: #939393;
+    --aff-pad-v: 14px;
+    --aff-pad-h: 14px;
+    --aff-blur: 4px;
 
-  --progress-height:5px; --progress-radius:999px;
-  --progress-bg:rgba(255,255,255,.14); --progress-fill:#FFF;
-  --marker-size:clamp(10px,1.4vw,14px); --marker-color:#FFF; --time-color:#BEBEBE; --time-font:clamp(12px,1.4vw,14px);
-  --progress-w-min:305px; --progress-w-ideal:60vw; --progress-w-max:475px;
-  --progress-width:clamp(var(--progress-w-min),var(--progress-w-ideal),var(--progress-w-max));
-  --cover-top-min:24px; --cover-top-ideal:8vh; --cover-top-max:120px;
-  --cover-top:clamp(var(--cover-top-min), var(--cover-top-ideal), var(--cover-top-max));
+    --player-bg: #000;
+    --light-color: rgba(255,255,255,.55);
+    --light-blur: 34px;
+    --light-size: 64vw;
 
-  /* масштаб карточек треков */
-  --track-scale-px:70;
-  --track-card-width:min(96vw,700px);
-  --cover-size-base:72px; --cover-radius-base:12px; --track-gap-base:14px; --track-spacing-base:12px;
-  --track-pad-v-base:10px; --track-pad-h-base:8px;
-  --track-title-size-base:22px; --track-title-weight:800; --track-title-color:var(--text);
-  --track-author-size-base:16px; --track-author-weight:700; --track-author-color:var(--muted);
-  --track-time-size-base:18px; --track-time-weight:700; --track-time-color:var(--muted);
+    --time-top-margin: 10px;
+    --time-font-weight: 800;
+    --time-font-size: 14px;
+    --time-color: #e7e7e7;
 
-  /* === RING (подсветка нажатия) === */
-  --ctrl-ring-color: rgba(100, 99, 99, 0.51);
-  --ctrl-ring-width: 2px;
-  --ctrl-ring-scale: 1.35;
-  --ctrl-ring-in: 140ms;
-  --ctrl-ring-out: 180ms;
+    --btn-size: 56px;
+  }
 
-  /* производные */
-  --_track-scale: calc(var(--track-scale-px)/100);
-  --cover-size: calc(var(--cover-size-base)*var(--_track-scale));
-  --cover-radius: calc(var(--cover-radius-base)*var(--_track-scale));
-  --track-gap: calc(var(--track-gap-base)*var(--_track-scale));
-  --track-spacing: calc(var(--track-spacing-base)*var(--_track-scale));
-  --track-title-size: calc(var(--track-title-size-base)*var(--_track-scale));
-  --track-author-size: calc(var(--track-author-size-base)*var(--_track-scale));
-  --track-time-size: calc(var(--track-time-size-base)*var(--_track-scale));
-  --track-pad-v: calc(var(--track-pad-v-base)*var(--_track-scale));
-  --track-pad-h: calc(var(--track-pad-h-base)*var(--_track-scale));
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0; color:var(--text);
-  font-family:Montserrat,system-ui,-apple-system,"Segoe UI",Roboto,Arial,"Noto Sans",sans-serif;
-  background:linear-gradient(180deg,var(--bg-top) 0%,var(--bg-bottom) 100%);
-  background-attachment:fixed;
-  display:flex; justify-content:center; align-items:flex-start;
-  padding:clamp(24px,4vw,48px) clamp(16px,3vw,40px);
-}
-.main-wrapper{ width:min(96vw,1200px); display:flex; flex-direction:column; align-items:center; gap:clamp(18px,2vw,28px); }
+  html,body{height:100%;}
+  body{
+    margin:0; background:var(--page-bg); color:#fff;
+    font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    overflow-x:hidden;
+  }
 
-/* HERO */
-.hero-box{ width:100%; height:var(--hero-box-height); flex:0 0 var(--hero-box-height); display:flex; align-items:flex-start; justify-content:center; overflow:hidden; }
-#hero{
-  margin:0; padding:var(--hero-pad-top) var(--hero-pad-right) var(--hero-pad-bottom) var(--hero-pad-left);
-  font-size:var(--h1-size); font-weight:var(--h1-weight);
-  text-align:center; opacity:1;
-  transition-property:opacity; transition-duration:var(--h1-fade-in); transition-timing-function:ease;
-}
-#hero.fade-out{ opacity:0; transition-duration:var(--h1-fade-out); }
-@media (max-width:600px){ #hero{ text-align:left; } }
-@media (min-width:600px){ #hero{ text-align:center; padding-left:0; padding-right:0; } }
+  #stars-canvas{ position:fixed; inset:0; z-index:0; display:block; }
 
-/* TRACK LIST */
-.track-list{ width:var(--track-card-width); display:flex; flex-direction:column; gap:var(--track-spacing); }
-.track{
-  display:grid; grid-template-columns:var(--cover-size) 1fr auto;
-  gap:var(--track-gap); align-items:center;
-  padding:var(--track-pad-v) var(--track-pad-h);
-  cursor:pointer; background:transparent; border-radius:clamp(6px,.8vw,10px);
-  opacity:0; transform:translateY(10px); transition:opacity .28s ease, transform .28s ease;
-  -webkit-tap-highlight-color:transparent; outline:none; user-select:none; -webkit-user-select:none;
-}
-.track.visible{ opacity:1; transform:translateY(0); }
-.track:hover{ background:rgba(255,255,255,0.04); }
-body.is-playing .track:hover{ background:transparent; }
-.track:focus{ outline:none; }
-.cover{ width:var(--cover-size); height:var(--cover-size); border-radius:var(--cover-radius); background:#bdbdbd; flex-shrink:0; }
-.track-text{ min-width:0; display:flex; flex-direction:column; gap:6px; }
-.track-title{ font-weight:var(--track-title-weight); font-size:var(--track-title-size); line-height:1.1; word-break:break-word; color:var(--track-title-color); }
-.track-author{ font-size:var(--track-author-size); color:var(--track-author-color); font-weight:var(--track-author-weight); }
-.track-time{ white-space:nowrap; font-weight:var(--track-time-weight); color:var(--track-time-color); font-size:var(--track-time-size); }
+  .page{ position:relative; z-index:1; min-height:100dvh; display:flex; }
+  .content{
+    width:100%; max-width:var(--content-max-w);
+    margin:0 auto; padding:0 var(--side-pad) 72px;
+    box-sizing:border-box;
+  }
 
-/* PILL */
-.pill{ width:var(--pill-width); background:var(--pill-bg); color:var(--pill-color-label); border-radius:var(--pill-radius); padding:var(--pill-padding-v) var(--pill-padding-h); display:flex; align-items:center; justify-content:space-between; gap:14px; font-weight:800; box-shadow:0 2px 0 rgba(0,0,0,.12) inset, 0 1px 0 rgba(255,255,255,.02); }
-.pill .label{ font-size:var(--pill-font-label); color:var(--pill-color-label); opacity:.95; margin:0; }
-.pill .time{ font-size:var(--pill-font-time); color:var(--pill-color-time); font-weight:800; white-space:nowrap; }
+  .title-wrap{ width:var(--title-block-w); margin:var(--title-top) auto var(--title-bottom); text-align:center; }
+  .title{
+    margin:0;
+    font-family:"Bebas Neue Pro","Bebas Neue",system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    font-size:var(--title-size);
+    font-weight:var(--title-weight);
+    letter-spacing:var(--title-letter-spacing);
+    line-height:var(--title-line-height);
+    color:var(--title-color);
+    text-transform:uppercase;
+  }
 
-/* PLAYER SHEET */
-audio{ display:none; }
-.player-overlay{ position:fixed; inset:0; display:grid; align-content:end; justify-items:center; background:transparent; pointer-events:none; z-index:var(--overlay-z); transition:background var(--sheet-open-duration) linear; backdrop-filter:none; }
-.player-overlay[data-state="open"]{ background:var(--overlay-bg); backdrop-filter:blur(var(--overlay-blur)); pointer-events:auto; }
-.player-sheet{
-  position:relative; width:min(100vw,var(--sheet-max-width)); height:var(--sheet-height);
-  background:var(--player-bg); color:var(--player-color);
-  border-radius:var(--sheet-radius-current) var(--sheet-radius-current) 0 0;
-  box-shadow:var(--player-shadow); border:var(--player-border);
-  padding:var(--sheet-top-padding) var(--sheet-side-padding) calc(var(--sheet-side-padding) + env(safe-area-inset-bottom));
-  display:flex; flex-direction:column; gap:clamp(12px,2.2vw,20px);
-  will-change:transform,border-radius;
-  transform:translateY(100%);
-  transition:transform var(--sheet-open-duration) var(--sheet-ease), border-radius 120ms linear;
-  contain:layout paint style; touch-action:none;
-}
-.player-overlay[data-state="open"] .player-sheet{ transform:translateY(0%); touch-action:none; }
+  .tracks{ width:100%; }
+  .divider{ width:var(--divider-width); height:var(--divider-thickness); background:var(--divider-color); margin:var(--divider-top) auto var(--divider-bottom); }
+  .track{ position:relative; display:flex; align-items:center; justify-content:space-between; gap:12px; }
+  .track-left{ min-width:0; padding-left:var(--track-text-offset); }
+  .track-title{ max-width:var(--track-title-maxw); font-size:var(--t-title-size); font-weight:var(--t-title-weight); color:var(--t-title-color); line-height:1.25; }
+  .track-chapter{ margin-top:2px; font-size:var(--t-chapter-size); font-weight:var(--t-chapter-weight); color:var(--t-chapter-color); }
+  .track-time{ margin-left:auto; flex:0 0 auto; font-size:var(--t-time-size); font-weight:var(--t-time-weight); color:var(--t-time-color); }
 
-.cover-large{ width:var(--cover-size-player); height:var(--cover-size-player); background:var(--cover-bg); border-radius:var(--cover-radius-player); margin:var(--cover-top) auto 8px; box-shadow:0 6px 22px rgba(0,0,0,0.4); flex:0 0 auto; }
-.meta{ text-align:center; margin-bottom:8px; }
-.title{ color:var(--title-color); font-size:var(--title-size); font-weight:var(--title-weight); margin:6px 0 4px; }
-.author{ color:var(--author-color); font-size:var(--author-size); font-weight:var(--author-weight); }
-.progress-shell{ width:min(100%,var(--progress-width)); margin:0 auto; }
-.progress{ width:100%; height:var(--progress-height); background:var(--progress-bg); border-radius:var(--progress-radius); position:relative; display:flex; align-items:center; }
-.progress .fill{ height:100%; background:var(--progress-fill); width:0%; border-radius:var(--progress-radius); }
-.progress .marker{ position:absolute; left:0%; transform:translate(-50%,-50%); top:50%; width:var(--marker-size); height:var(--marker-size); background:var(--marker-color); border-radius:50%; box-shadow:0 2px 6px rgba(0,0,0,0.5); cursor:pointer; touch-action:none; }
-.time-row{ width:100%; margin:6px auto 0; display:flex; justify-content:space-between; align-items:center; }
+  .aff-card{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:var(--aff-width); padding:var(--aff-pad-v) var(--aff-pad-h); background:var(--aff-bg); border:var(--aff-border); border-radius:var(--aff-radius); text-align:center; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:2; backdrop-filter:blur(var(--aff-blur)); }
+  .aff-text{ font-size:var(--aff-text-size); font-weight:var(--aff-text-weight); color:var(--aff-text-color); line-height:1.2; opacity:0; transition: opacity .6s ease; }
+  .aff-text.show{ opacity:1; }
 
-/* === КНОПКИ + ИКОНКИ (SVG через CSS) === */
-.controls{ display:flex; gap:var(--controls-gap); align-items:center; justify-content:center; margin:var(--controls-offset-y) 0 var(--controls-offset-bottom); }
-.btn{ position:relative; width:var(--btn-size); height:var(--btn-size); border-radius:999px; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; border:none; box-shadow:none; }
-.btn.play{ width:var(--btn-size-main); height:var(--btn-size-main); }
-.btn.small{ width:calc(var(--btn-size) - clamp(4px,.8vw,8px)); height:calc(var(--btn-size) - clamp(4px,.8vw,8px)); }
-.btn .glyph{ width:100%; height:100%; background-repeat:no-repeat; background-position:center; background-size:contain; border-radius:0; }
+  .player{ width:100%; max-width:var(--content-max-w); margin:36px auto 80px; padding:0 var(--side-pad); box-sizing:border-box; background:var(--player-bg); display:none; }
+  :target.player{ display:block; }
 
-/* RING: подсветка при нажатии/фокусе */
-.btn::after{
-  content:""; position:absolute; inset:0; border-radius:999px;
-  border: var(--ctrl-ring-width) solid var(--ctrl-ring-color);
-  transform: scale(0.9);
-  opacity:0;
-  transition:
-    transform var(--ctrl-ring-out) ease,
-    opacity var(--ctrl-ring-out) ease;
-  pointer-events:none;
-}
-.btn[data-active="true"]::after,
-.btn:active::after,
-.btn:focus-visible::after{
-  opacity:1;
-  transform: scale(var(--ctrl-ring-scale));
-  transition-duration: var(--ctrl-ring-in);
-}
+  .player .header{ position:relative; width:100%; }
+  .player .light{ position:absolute; left:50%; top:0; width:var(--light-size); height:var(--light-size); transform:translate(-50%,-42%); border-radius:50%; background:radial-gradient(circle, var(--light-color) 0%, rgba(0,0,0,0) 60%); filter:blur(var(--light-blur)); pointer-events:none; z-index:0; }
+  .player .svg-player{ position:relative; z-index:1; width:100%; }
 
-/* PLAY */
-.icon-play{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='51.692' height='52' fill='none'><ellipse cx='25.846' cy='26' fill='%23FFF' rx='25.846' ry='26'/><path fill='%23282729' fill-opacity='.97' fill-rule='evenodd' d='M37.76 26.942c-2.57 1.185-6.952 3.288-9.83 5.12-2.847 1.812-6.355 4.714-8.394 6.462-.657.563-1.69.098-1.69-.768V14.244c0-.866 1.033-1.331 1.69-.768 2.039 1.748 5.547 4.65 8.394 6.462 2.878 1.832 7.26 3.935 9.83 5.12.793.366.793 1.518 0 1.884Z'/></svg>"); }
-/* PAUSE */
-.icon-pause{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='51.692' height='52' fill='none'><ellipse cx='25.846' cy='26' fill='%23FFF' rx='25.846' ry='26'/><g fill='%23282729' fill-opacity='.97'><rect width='6' height='26' x='29' y='13' rx='2'/><rect width='6' height='26' x='17' y='13' rx='2'/></g></svg>"); }
-/* PREV */
-.icon-prev{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='28' fill='none'><g fill='%23FFF'><path fill-rule='evenodd' d='M2.086 14.942c2.571 1.185 6.952 3.288 9.83 5.12 2.847 1.812 6.356 4.714 8.394 6.462.657.563 1.69.098 1.69-.768V2.244c0-.866-1.033-1.331-1.69-.768-2.038 1.748-5.547 4.65-8.393 6.462-2.879 1.832-7.26 3.935-9.831 5.12-.792.366-.792 1.518 0 1.884Z'/><rect width='2' height='28' rx='1' transform='matrix(-1 0 0 1 3 0)'/></g></svg>"); }
-/* NEXT */
-.icon-next{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='22' height='28' fill='none'><g fill='%23FFF'><path fill-rule='evenodd' d='M19.914 14.942c-2.571 1.185-6.952 3.288-9.83 5.12-2.847 1.812-6.356 4.714-8.394 6.462-.657.563-1.69.098-1.69-.768V2.244c0-.866 1.033-1.331 1.69-.768 2.038 1.748 5.547 4.65 8.393 6.462 2.879 1.832 7.26 3.935 9.831 5.12.792.366.792 1.518 0 1.884Z'/><rect width='2' height='28' x='19' rx='1'/></g></svg>"); }
+  .player h2{ margin:16px 0 4px; font-weight:900; font-size:18px; line-height:1.2; }
+  .player .chapter{ margin:0 0 10px; font-weight:800; font-size:14px; opacity:.95; }
 
-.btn.disabled{ opacity:.5; filter:grayscale(1); cursor:default; pointer-events:none; }
+  .progress{ width:100%; height:6px; background:#262626; border-radius:999px; position:relative; overflow:hidden; }
+  .progress__bar{ position:absolute; left:0; top:0; bottom:0; width:0%; background:#f2f2f2; border-radius:999px; }
+  .time{ margin-top:var(--time-top-margin); display:flex; justify-content:space-between; font: var(--time-font-weight) var(--time-font-size)/1.1 system-ui; color:var(--time-color); }
 
-@media (max-width:560px){
-  :root{ --sheet-side-padding:16px; }
-  .title{ line-height:1.1; }
-}
+  .controls{ margin-top:14px; display:flex; justify-content:space-between; gap:10px; }
+  .btn{ display:grid; place-items:center; width:var(--btn-size); height:var(--btn-size); background:transparent; border:0; padding:0; }
+  .btn svg{ width:100%; height:100%; display:block; }
 </style>
 </head>
 <body>
-  <div class="main-wrapper">
-    <div class="hero-box" id="heroBox">
-      <h1 id="hero">Для самой маленькой и<br>любимой принцессы..</h1>
+
+<canvas id="stars-canvas" aria-hidden="true"></canvas>
+
+<main class="page">
+  <section class="content">
+    <div class="title-wrap">
+      <h1 class="title">ЧЁРНАЯ СТРЕЛА</h1>
     </div>
 
-    <div id="list" class="track-list"></div>
+    <div class="tracks" id="tracks">
+      <article class="track">
+        <div class="track-left">
+          <div class="track-title" data-title>Джон мщу-за-всех</div>
+          <div class="track-chapter">Пролог</div>
+        </div>
+        <time class="track-time">12:34</time>
+      </article>
 
-    <div class="pill" id="pill" aria-live="polite">
-      <div class="label">Сказочка доступна через:</div>
-      <div class="time" id="countdown">00:00</div>
+      <div class="divider"></div>
+
+      <article class="track">
+        <div class="track-left">
+          <div class="track-title" data-title>Джон мщу-за-всех</div>
+          <div class="track-chapter">Пролог</div>
+        </div>
+        <time class="track-time">12:34</time>
+
+        <div class="aff-card" role="status" aria-live="polite">
+          <div class="aff-text" id="affText">Я люблю тебя &lt;З</div>
+        </div>
+      </article>
+
+      <div class="divider"></div>
     </div>
-  </div>
 
-  <div class="player-overlay" id="playerOverlay" data-state="closed" aria-hidden="true">
-    <div class="player-sheet" id="playerSheet" role="dialog" aria-label="Аудиоплеер">
-      <div class="cover-large" id="playerCover" aria-hidden="true"></div>
-      <div class="meta">
-        <div class="title" id="playerTitle">Название сказки</div>
-        <div class="author" id="playerAuthor">Автор сказки</div>
+    <section id="player" class="player">
+      <div class="header">
+        <div class="light"></div>
+        <object class="svg-player" type="image/svg+xml" data="SVG_player.svg" aria-label="Шапка трека"></object>
       </div>
 
-      <div class="progress-shell">
-        <div class="progress" id="progressBar" aria-valuemin="0" aria-valuemax="100" role="progressbar">
-          <div class="fill" id="progressFill"></div>
-          <div class="marker" id="progressMarker" role="slider" aria-valuemin="0" aria-valuemax="100" tabindex="0"></div>
-        </div>
-        <div class="time-row">
-          <div class="time-left" id="timeLeft">00:00</div>
-          <div class="time-right" id="timeRight">00:00</div>
-        </div>
+      <h2 id="plTitle">Часть: Тайны замка Тансгет</h2>
+      <p class="chapter" id="plChapter">Глава 2</p>
+
+      <div class="progress" id="progress">
+        <div class="progress__bar" id="progressBar"></div>
+      </div>
+      <div class="time">
+        <span id="curTime">00:00</span>
+        <span id="durTime">00:00</span>
       </div>
 
       <div class="controls">
-        <button class="btn small" id="prevBtn" title="Предыдущий"><div class="glyph icon-prev"></div></button>
-        <button class="btn play" id="playBtn" title="Воспроизвести"><div class="glyph icon-play" id="playGlyph"></div></button>
-        <button class="btn small" id="nextBtn" title="Следующий"><div class="glyph icon-next"></div></button>
+        <button class="btn" id="btnPrev" title="Prev" aria-label="Prev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M7 12L19 4v16L7 12Z"></path><path d="M5 4v16"></path></svg></button>
+        <button class="btn" id="btnRew" title="Rewind -15s" aria-label="Rewind"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M11 12 20 6v12l-9-6Z"></path><path d="M4 12l9-6v12l-9-6Z"></path></svg></button>
+        <button class="btn" id="btnPlay" title="Play/Pause" aria-label="Play"><svg id="iconPlay" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 5v14l11-7-11-7Z"></path></svg></button>
+        <button class="btn" id="btnStop" title="Stop" aria-label="Stop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg></button>
+        <button class="btn" id="btnFwd" title="Fast fw +30s" aria-label="Fast fw"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M13 12 4 6v12l9-6Z"></path><path d="M20 12l-9-6v12l9-6Z"></path></svg></button>
+        <button class="btn" id="btnNext" title="Next" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M17 12 5 20V4l12 8Z"></path><path d="M19 4v16"></path></svg></button>
       </div>
 
-      <audio id="playerAudio" preload="metadata"></audio>
-    </div>
-  </div>
+      <audio id="audio" preload="metadata"><source src="" type="audio/mpeg" /></audio>
+    </section>
+  </section>
+</main>
 
 <script>
-/* ====== Данные ====== */
-const tracksData = [
-  // ← сюда подставляй свой файл (положи его в папку media и поменяй имя ниже)
-  { title:"Тестовая запись", author:"Ты ❤️", time:"00:00", src:"media/test_1.m4a" },
-  { title:"Тестовая запись 2", author:"Автор", time:"04:58", src:"media/test_2.mp3" },
-  { title:"Название сказки", author:"Автор", time:"05:12", src:"media/story3.mp3" },
-  { title:"Название сказки", author:"Автор", time:"02:47", src:"media/story4.mp3" },
-];
-const KEY="unlockedCount";
-let unlockedCount = Math.max(1, parseInt(localStorage.getItem(KEY)||"1",10));
-unlockedCount = Math.min(unlockedCount, tracksData.length);
+(() => {
+  const phrases = [
+    'Я люблю тебя <З',
+    'У тебя всё получится!',
+    'Ты умничка <З',
+    'Я горжусь тобой!',
+    'Ты прекрасна',
+    'Ты моё солнышко <З'
+  ];
+  const el = document.getElementById('affText');
+  if(!el) return;
+  let i = 0;
 
-const list=document.getElementById("list");
-function render(){
-  list.innerHTML="";
-  const count=Math.min(unlockedCount, tracksData.length);
-  for(let i=0;i<count;i++){
-    const t=tracksData[i];
-    const row=document.createElement("div");
-    row.className="track"; row.dataset.track=String(i); row.tabIndex=-1;
-    row.innerHTML=`
-      <div class="cover" aria-hidden="true"></div>
-      <div class="track-text">
-        <div class="track-title">${t.title}</div>
-        <div class="track-author">${t.author}</div>
-      </div>
-      <div class="track-time">${t.time}</div>
-    `;
-    row.addEventListener('pointerdown',e=>{ e.preventDefault(); });
-    row.addEventListener('click',()=> openPlayerAtIndex(i));
-    list.appendChild(row);
-    requestAnimationFrame(()=> row.classList.add('visible'));
+  const getDur = () => {
+    const d = getComputedStyle(el).transitionDuration.split(',')[0].trim();
+    if (d.endsWith('ms')) return parseFloat(d) || 600;
+    if (d.endsWith('s')) return (parseFloat(d) || 0.6) * 1000;
+    return 600;
+  };
+  const D = getDur();
+
+  function cycle(){
+    el.classList.remove('show');
+    setTimeout(() => {
+      i = (i+1) % phrases.length;
+      el.textContent = phrases[i];
+      requestAnimationFrame(() => el.classList.add('show'));
+    }, D);
   }
-  document.getElementById("pill").style.display = (unlockedCount>=tracksData.length)?"none":"flex";
-}
 
-/* ===== Таймер 20:00 ===== */
-const countdownEl=document.getElementById("countdown");
-function pad(n){ return String(n).padStart(2,'0'); }
-function next2000(){ const now=new Date(); const t=new Date(now.getFullYear(),now.getMonth(),now.getDate(),20,0,0); if(t-now<=0) t.setDate(t.getDate()+1); return t; }
-let target=next2000();
-function tick(){
-  if (unlockedCount>=tracksData.length) return;
-  const now=new Date(); let diff=target-now;
-  if(diff<=0){ if(unlockedCount<tracksData.length){ unlockedCount+=1; localStorage.setItem(KEY,String(unlockedCount)); render(); } target=next2000(); diff=target-new Date(); }
-  const h=Math.floor(diff/3_600_000), m=Math.floor((diff%3_600_000)/60_000), s=Math.floor((diff%60_000)/1000);
-  countdownEl.textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
-  requestAnimationFrame(tick);
-}
-
-/* ===== Плеер ===== */
-const overlay=document.getElementById('playerOverlay');
-const sheet=document.getElementById('playerSheet');
-const playerAudio=document.getElementById('playerAudio');
-const playerTitle=document.getElementById('playerTitle');
-const playerAuthor=document.getElementById('playerAuthor');
-const playBtn=document.getElementById('playBtn');
-const prevBtn=document.getElementById('prevBtn');
-const nextBtn=document.getElementById('nextBtn');
-const timeLeftEl=document.getElementById('timeLeft');
-const timeRightEl=document.getElementById('timeRight');
-const progressBar=document.getElementById('progressBar');
-const progressFill=document.getElementById('progressFill');
-const progressMarker=document.getElementById('progressMarker');
-const root=document.documentElement;
-
-let currentIndex=0, isPlaying=false;
-function secToTime(s){ if(!isFinite(s))return'00:00'; s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), sec=s%60; return `${pad(m)}:${pad(sec)}`; }
-function loadTrack(idx){
-  const t=tracksData[idx]; currentIndex=idx;
-  playerTitle.textContent=t.title; playerAuthor.textContent=t.author;
-  playerAudio.src=t.src; playerAudio.load();
-  playerAudio.addEventListener('loadedmetadata',()=>{ timeRightEl.textContent=secToTime(playerAudio.duration); updateProgress(); },{once:true});
-  updateNavButtons(); updatePlayGlyph();
-}
-
-/* helper: снять выделения/фокусы */
-function clearSelection(){
-  try{ window.getSelection()?.removeAllRanges(); }catch(_){}
-  try{ document.activeElement && document.activeElement.blur(); }catch(_){}
-}
-function resetRadius(){ root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top')); }
-
-/* открытие/закрытие */
-function clearInlineTransform(){ sheet.style.transform=''; sheet.style.transition=''; }
-function openPlayerAtIndex(idx){
-  loadTrack(idx); clearInlineTransform();
-  sheet.style.transition=`transform var(--sheet-open-duration) var(--sheet-ease), border-radius 120ms linear`;
-  overlay.dataset.state='open'; overlay.setAttribute('aria-hidden','false');
-  document.body.classList.add('is-playing');
-  clearSelection();
-  requestAnimationFrame(()=> requestAnimationFrame(()=> root.style.setProperty('--sheet-radius-current','0px')));
-}
-function closePlayerSheet(){
-  overlay.dataset.state='closed'; overlay.setAttribute('aria-hidden','true');
-  clearInlineTransform(); playerAudio.pause(); isPlaying=false; updatePlayGlyph();
-  document.body.classList.remove('is-playing'); resetRadius(); clearSelection();
-}
-const __isTouch = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-overlay.addEventListener('click',e=>{ if(!__isTouch && e.target===overlay) closePlayerSheet(); });
-window.addEventListener('keydown',e=>{ if(e.key==='Escape') closePlayerSheet(); });
-
-/* play/pause — просто переключаем классы иконки */
-playBtn.addEventListener('click',()=>{ if(!playerAudio.src) return; if(isPlaying){playerAudio.pause();}else{playerAudio.play().catch(()=>{});} });
-playerAudio.addEventListener('play',()=>{ isPlaying=true; updatePlayGlyph(); });
-playerAudio.addEventListener('pause',()=>{ isPlaying=false; updatePlayGlyph(); });
-playerAudio.addEventListener('ended',()=>{ isPlaying=false; updatePlayGlyph(); });
-
-function updatePlayGlyph(){
-  const g=document.getElementById('playGlyph');
-  if(!g) return;
-  g.classList.toggle('icon-play', !isPlaying);
-  g.classList.toggle('icon-pause', isPlaying);
-}
-
-prevBtn.addEventListener('click',()=>{ if(currentIndex>0 && currentIndex-1<unlockedCount){ loadTrack(currentIndex-1); playerAudio.play().catch(()=>{}); } });
-nextBtn.addEventListener('click',()=>{ if(currentIndex+1<unlockedCount){ loadTrack(currentIndex+1); playerAudio.play().catch(()=>{}); } });
-function updateNavButtons(){
-  if(currentIndex<=0 || currentIndex-1>=unlockedCount) prevBtn.classList.add('disabled'); else prevBtn.classList.remove('disabled');
-  if(currentIndex+1>=unlockedCount) nextBtn.classList.add('disabled'); else nextBtn.classList.remove('disabled');
-}
-
-/* прогресс */
-function updateProgress(){
-  if(!playerAudio.duration || isNaN(playerAudio.duration)){
-    progressFill.style.width='0%'; progressMarker.style.left='0%';
-    timeLeftEl.textContent='00:00'; timeRightEl.textContent=secToTime(playerAudio.duration||0); return;
-  }
-  const pct=(playerAudio.currentTime/playerAudio.duration)*100;
-  progressFill.style.width=pct+'%'; progressMarker.style.left=pct+'%';
-  timeLeftEl.textContent=secToTime(playerAudio.currentTime);
-}
-playerAudio.addEventListener('timeupdate',updateProgress);
-progressBar.addEventListener('click',e=>{
-  if(!playerAudio.duration) return;
-  const rect=progressBar.getBoundingClientRect(); const x=e.clientX-rect.left; const pct=Math.max(0,Math.min(1,x/rect.width));
-  playerAudio.currentTime=pct*playerAudio.duration; updateProgress();
-});
-let dragging=false;
-progressMarker.addEventListener('mousedown',e=>{ e.preventDefault(); dragging=true; });
-window.addEventListener('mousemove',e=>{
-  if(!dragging || !playerAudio.duration) return;
-  const rect=progressBar.getBoundingClientRect(); const x=Math.max(0,Math.min(rect.width,e.clientX-rect.left));
-  const pct=x/rect.width; progressMarker.style.left=(pct*100)+'%'; progressFill.style.width=(pct*100)+'%'; playerAudio.currentTime=pct*playerAudio.duration;
-});
-window.addEventListener('mouseup',()=>{ dragging=false; });
-progressMarker.addEventListener('touchstart',()=>{ dragging=true; },{passive:true});
-window.addEventListener('touchmove',e=>{
-  if(!dragging || !playerAudio.duration) return;
-  const touch=e.touches[0]; const rect=progressBar.getBoundingClientRect(); const x=Math.max(0,Math.min(rect.width,touch.clientX-rect.left));
-  const pct=x/rect.width; progressMarker.style.left=(pct*100)+'%'; progressFill.style.width=(pct*100)+'%'; playerAudio.currentTime=pct*playerAudio.duration;
-},{passive:true});
-window.addEventListener('touchend',()=>{ dragging=false; });
-
-/* ===== Ротация h1 ===== */
-const MOBILE_BP=600;
-const isMobile=()=>window.matchMedia(`(max-width:${MOBILE_BP}px)`).matches;
-const phrases=[
-  {text:"Я люблю тебя <З", pc:{size:64,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"}},
-  {text:"У тебя всё получится!", pc:{size:62,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"center"}},
-  {text:"Ты большая молодец, я тобой горжусь <З", pc:{size:58,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
-  {text:"Улыбайся чаще моё сокровище, ты прекрасна!", pc:{size:56,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
-  {text:"Нет ничего красивее твоей улыбки)", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
-  {text:"Как бы ни было трудно и сложно - ты моё солнышко. Я люблю тебя <З", pc:{size:44,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
-  {text:"Для самой маленькой и любимой принцессы..", pc:{size:60,weight:900,color:"#FFF",align:"center"}, mob:{size:35,weight:900,color:"#FFF",align:"left"}},
-  {text:"Ты знала, что самая милая булочка на планете сейчас читает этот текст???", pc:{size:46,weight:900,color:"#FFF",align:"center"}, mob:{size:28,weight:900,color:"#FFF",align:"left"}},
-];
-const hero=document.getElementById('hero');
-let phraseIdx=0, rotTimer=null, rotIntervalMs=8500;
-function applyCurrentPhrase(){
-  const ph=phrases[phraseIdx]; const cfg=isMobile()?(ph.mob||ph.pc):(ph.pc||ph.mob);
-  hero.innerHTML=ph.text||''; hero.style.fontSize=(cfg.size??56)+'px'; hero.style.fontWeight=(cfg.weight??900);
-  hero.style.color=(cfg.color||'#FFF'); hero.style.textAlign=isMobile()?(cfg.align||'left'):'center';
-}
-function rotateHero(){ hero.classList.add('fade-out'); const outMs=parseTime(getComputedStyle(document.documentElement).getPropertyValue('--h1-fade-out'));
-  setTimeout(()=>{ phraseIdx=(phraseIdx+1)%phrases.length; applyCurrentPhrase(); hero.classList.remove('fade-out'); }, outMs); }
-try{ const mq=window.matchMedia(`(max-width:${MOBILE_BP}px)`); (mq.addEventListener?mq.addEventListener('change',applyCurrentPhrase):mq.addListener(applyCurrentPhrase)); window.addEventListener('orientationchange',applyCurrentPhrase);}catch(_){}
-function startRotation(){ stopRotation(); rotTimer=setInterval(rotateHero, rotIntervalMs); }
-function stopRotation(){ if(rotTimer){ clearInterval(rotTimer); rotTimer=null; } }
-function parseTime(str){ const s=String(str).trim(); if(s.endsWith('ms')) return parseFloat(s); if(s.endsWith('s')) return parseFloat(s)*1000; const n=parseFloat(s); return Number.isFinite(n)?n:420; }
-
-/* ===== Drag-to-close: одно движение ===== */
-const __isTouchDevice = matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window;
-let __dragging=false, __startY=0, __curPct=0;
-const MIN_DRAG_PX = 4;
-
-function radiusByProgress(progress){
-  const R=parseFloat(getComputedStyle(root).getPropertyValue('--sheet-radius-top'))||16;
-  if(progress<=0.90) return R;
-  const t=Math.min(1,(progress-0.90)/0.10);
-  return R*(1-t);
-}
-function applyDrag(pct){
-  sheet.style.transform=`translateY(${pct*100}%)`;
-  const progress=1-pct;
-  root.style.setProperty('--sheet-radius-current', radiusByProgress(progress)+'px');
-}
-function onDown(e){
-  if(!__isTouchDevice) return;
-  if(overlay.dataset.state!=='open') return;
-  __dragging=true;
-  __startY=('touches'in e)?e.touches[0].clientY:e.clientY;
-  __curPct=0;
-  sheet.style.transition='none';
-}
-function onMove(e){
-  if(!__dragging||!__isTouchDevice) return;
-  const y=('touches'in e)?e.touches[0].clientY:e.clientY;
-  const dy=y-__startY;
-  const h=sheet.getBoundingClientRect().height||1;
-  const pct=Math.max(0, Math.min(1, dy/h));
-  __curPct=pct;
-  applyDrag(__curPct);
-}
-function onUp(){
-  if(!__dragging||!__isTouchDevice) return;
-  __dragging=false;
-  sheet.style.transition=`transform var(--sheet-close-duration) var(--sheet-ease), border-radius 120ms linear`;
-  const willClose = (__curPct > (MIN_DRAG_PX / (sheet.getBoundingClientRect().height||1)));
-  if(willClose){
-    root.style.setProperty('--sheet-radius-current', getComputedStyle(root).getPropertyValue('--sheet-radius-top'));
-    sheet.style.transform='translateY(100%)';
-    sheet.addEventListener('transitionend', ()=>{ closePlayerSheet(); }, {once:true});
-  }else{
-    sheet.style.transform='translateY(0%)';
-    sheet.addEventListener('transitionend', ()=>{ root.style.setProperty('--sheet-radius-current','0px'); }, {once:true});
-  }
-}
-sheet.addEventListener('touchstart', onDown, {passive:true});
-window.addEventListener('touchmove', onMove, {passive:true});
-window.addEventListener('touchend', onUp);
-
-/* ====== RING JS: ставим/снимаем флаг активности ====== */
-const ringTargets = [prevBtn, playBtn, nextBtn];
-ringTargets.forEach(btn=>{
-  btn.addEventListener('pointerdown', ()=> btn.dataset.active = "true");
-  btn.addEventListener('pointerup',   ()=> delete btn.dataset.active);
-  btn.addEventListener('pointercancel',()=> delete btn.dataset.active);
-  btn.addEventListener('pointerleave', ()=> delete btn.dataset.active);
-  btn.addEventListener('blur',         ()=> delete btn.dataset.active);
-  btn.addEventListener('keydown', e=>{
-    if (e.key === ' ' || e.key === 'Enter') btn.dataset.active = "true";
-  });
-  btn.addEventListener('keyup', ()=> delete btn.dataset.active);
-});
-
-/* Плавный масштаб карточек: 70 → 68 при ширине 330→600 */
-(()=>{ const Wmin=330, Wmax=600, Smin=70, Smax=68;
-  function update(){ const w=Math.max(Wmin,Math.min(window.innerWidth||document.documentElement.clientWidth,Wmax));
-    const t=(w-Wmin)/(Wmax-Wmin); const s=Smin+(Smax-Smin)*t; document.documentElement.style.setProperty('--track-scale-px', s.toFixed(2)); }
-  let raf=0; function onResize(){ if(!raf) raf=requestAnimationFrame(()=>{ raf=0; update(); }); }
-  window.addEventListener('resize',onResize); window.addEventListener('orientationchange',onResize); update();
+  el.textContent = phrases[i];
+  requestAnimationFrame(() => el.classList.add('show'));
+  setInterval(cycle, 7000);
 })();
 
-/* INIT */
-render(); tick(); applyCurrentPhrase(); startRotation();
+(() => {
+  const getCSS = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const ruler = document.createElement('span');
+  Object.assign(ruler.style,{
+    position:'absolute', visibility:'hidden', whiteSpace:'nowrap',
+    fontSize: getCSS('--t-title-size'),
+    fontWeight: getCSS('--t-title-weight'),
+    fontFamily: getComputedStyle(document.body).fontFamily
+  });
+  document.body.appendChild(ruler);
+
+  document.querySelectorAll('[data-title]').forEach(el=>{
+    const maxW = parseFloat(getCSS('--track-title-maxw'));
+    const txt = el.textContent.trim().replace(/\s+/g,' ');
+    el.setAttribute('title', txt);
+
+    ruler.textContent = txt;
+    if (ruler.offsetWidth <= maxW) return;
+
+    const words = txt.split(' ');
+    let out = '';
+    for(let k=0;k<words.length;k++){
+      const next = (out ? out+' ' : '') + words[k];
+      ruler.textContent = next + '…';
+      if (ruler.offsetWidth <= maxW){ out = next; continue; }
+
+      if (words[k].length >= 7){
+        let cut = words[k];
+        while (cut.length > 1){
+          cut = cut.slice(0,-1);
+          const cand = (out ? out+' ' : '') + cut + '…';
+          ruler.textContent = cand;
+          if (ruler.offsetWidth <= maxW){ out = (out? out+' ' : '') + cut; break; }
+        }
+      }
+      break;
+    }
+    el.textContent = out + '…';
+  });
+})();
+
+(() =>{
+  const audio = document.getElementById('audio');
+  const progress = document.getElementById('progress');
+  const bar = document.getElementById('progressBar');
+  const cur = document.getElementById('curTime');
+  const dur = document.getElementById('durTime');
+
+  const btnPlay = document.getElementById('btnPlay');
+  const btnStop = document.getElementById('btnStop');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const btnRew  = document.getElementById('btnRew');
+  const btnFwd  = document.getElementById('btnFwd');
+
+  const fmt = t=>{ if(!isFinite(t)) t=0; const m = Math.floor(t/60), s = Math.floor(t%60); return String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0'); };
+
+  audio.addEventListener('loadedmetadata', ()=> dur.textContent = fmt(audio.duration));
+  audio.addEventListener('timeupdate', ()=>{ cur.textContent = fmt(audio.currentTime); bar.style.width = ((audio.currentTime/(audio.duration||1))*100)+'%'; });
+
+  progress.addEventListener('click', e=>{
+    const r = progress.getBoundingClientRect();
+    audio.currentTime = ((e.clientX - r.left)/r.width) * (audio.duration||0);
+  });
+
+  btnPlay.addEventListener('click', ()=> { if(audio.paused) audio.play(); else audio.pause(); });
+  btnStop.addEventListener('click', ()=> { audio.pause(); audio.currentTime = 0; });
+  btnRew .addEventListener('click', ()=> audio.currentTime = Math.max(0, audio.currentTime - 15));
+  btnFwd .addEventListener('click', ()=> audio.currentTime = Math.min(audio.duration||0, audio.currentTime + 30));
+  btnPrev.addEventListener('click', ()=> {});
+  btnNext.addEventListener('click', ()=> {});
+})();
 </script>
 </body>
 </html>
