@@ -9,6 +9,46 @@
 
 <style>
 
+:root {
+  /* единая адаптивная переменная для расстояния между кнопками */
+  --controls-gap: clamp(18px, 3vw, 28px);
+
+  /* === Layout axis & per-block offsets (0 at center) === */
+  --axis: 0px;         /* shift entire player column */
+  --head-dy: 0px;      /* Шапка (header) */
+  --title-dy: 0px;     /* Название трека */
+  --controls-dy: 0px;  /* Блок с кнопками */
+  --chapter-dy: 0px;   /* Глава */
+  --progress-dy: 0px;  /* Прогресс бар (и тайм) */
+
+  /* optional vertical spacing between sections */
+  --player-gap: 12px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--controls-gap) !important; /* фиксируем окончательно */
+}
+
+.btn {
+  display: grid;
+  place-items: center;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  background: transparent;
+  border: 0;
+  padding: 0;
+}
+
+.btn svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+
 /* UX: remove orange highlight/outline on tap/focus for interactive elements */
 html, body { -webkit-tap-highlight-color: transparent; }
 :where(a, button, [tabindex]) { outline: none; }
@@ -18,7 +58,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
 /* Perf: hint composition to smooth transform animation of the sheet */
 .sheet { will-change: transform; transform: translateZ(0); }
 .overlay { transform: translateZ(0); }
-
 
   @font-face {
   font-family: "Bebas Neue Pro";
@@ -43,7 +82,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
   font-style: normal;
   font-display: swap;
 }
-
 
   :root{
     --page-bg: #000;
@@ -125,7 +163,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
   --aff-width: var(--rail);
 }
 
-
   html,body{height:100%;}
   body{
     margin:0; background:var(--page-bg); color:#fff;
@@ -181,10 +218,79 @@ html, body { -webkit-tap-highlight-color: transparent; }
   .progress__bar{ position:absolute; left:0; top:0; bottom:0; width:0%; background:#f2f2f2; border-radius:999px; }
   .time{ margin-top:var(--time-top-margin); display:flex; justify-content:space-between; font: var(--time-font-weight) var(--time-font-size)/1.1 system-ui; color:var(--time-color); }
 
-  .controls{ margin-top:14px; display:flex; justify-content:space-between; gap:10px; }
+  
+/* === ADAPTIVE GAP FOR CONTROLS === */
+
+/* === ADAPTIVE GAP (landscape default) === */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  --controls-offset: 60px;
+  position: relative;
+  top: var(--controls-offset);
+}
+
+
   .btn{ display:grid; place-items:center; width:var(--btn-size); height:var(--btn-size); background:transparent; border:0; padding:0; }
   .btn svg{ width:100%; height:100%; display:block; }
+
+/* === Controls container (group all buttons) === */
+
+/* === ADAPTIVE GAP FOR CONTROLS === */
+
+/* === ADAPTIVE GAP (landscape default) === */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  --controls-offset: 60px;
+  position: relative;
+  top: var(--controls-offset);
+}
+
+
+
+:root {
+  --size-prev:    clamp(25px, 4vw, 32px);
+  --size-back15:  clamp(30px, 4.5vw, 38px);
+  --size-play:    clamp(50px, 6vw, 64px);
+  --size-fwd30:   clamp(30px, 4.5vw, 38px);
+  --size-next:    clamp(25px, 4vw, 32px);
+}
+#prev img   { width: var(--size-prev);   height: var(--size-prev); }
+#back15 img { width: var(--size-back15); height: var(--size-back15); }
+#pp img     { width: var(--size-play);   height: var(--size-play); }
+#fwd30 img  { width: var(--size-fwd30);  height: var(--size-fwd30); }
+#next img   { width: var(--size-next);   height: var(--size-next); }
+
+
+/* === Player vertical layout & movable sections === */
+.player{
+  display: flex;
+  flex-direction: column;
+  align-items: center;              /* center column */
+  gap: var(--player-gap);
+}
+
+/* Order top-to-bottom */
+.player .header       { order:10; position:relative; top: calc(var(--axis) + var(--head-dy)); }
+.player h2            { order:20; position:relative; top: calc(var(--axis) + var(--title-dy)); }
+.player .controls     { order:30; position:relative; top: calc(var(--axis) + var(--controls-dy)); }
+.player .chapter      { order:40; position:relative; top: calc(var(--axis) + var(--chapter-dy)); }
+.player .progress     { order:50; position:relative; top: calc(var(--axis) + var(--progress-dy)); width:100%; }
+.player .time         { order:60; position:relative; top: calc(var(--axis) + var(--progress-dy)); width:100%; }
+
 </style>
+
+<style>
+/* overrides to disable temporary glyph icons */
+
+
+</style>
+
 </head>
 <body>
 
@@ -354,7 +460,7 @@ html, body { -webkit-tap-highlight-color: transparent; }
       root.innerHTML = `
         <style>
           :host { all: initial; }
-          :host{ --sheet-max-w: 700px; --sheet-radius-top: 18px; --sheet-radius-current: var(--sheet-radius-top); --cover-shadow-x: 0px; --cover-shadow-y: 0px; --cover-shadow-blur: 40px; --cover-shadow-spread: 0px; --cover-shadow-color: rgba(0,0,0,.45); }
+          :host{ --sheet-max-w: 700px; --sheet-radius-top: 18px; --sheet-radius-current: var(--sheet-radius-top); --cover-shadow-x: 0px; --cover-shadow-y: 0px; --cover-shadow-blur: 40px; --cover-shadow-spread: 0px; --cover-shadow-color: rgba(0,0,0,.3);  --glow-w: clamp(282px, 32vw, 365px); --glow-h: clamp(282px, 32vw, 365px) ; --glow-radius: 82px; --glow-blur: 120px; --glow-color: rgba(154,62,47,.72); --glow-offset-y: 28px; }
           :host, * { box-sizing: border-box; }
           .overlay { position: fixed; inset: 0; display: grid; align-content: end; justify-items: center;
                      background: transparent; backdrop-filter: none; pointer-events: none; z-index: 999999;
@@ -374,37 +480,43 @@ html, body { -webkit-tap-highlight-color: transparent; }
           .cover { height: clamp(290px, 32vw, 390px); display:grid; place-items:center; margin-top: clamp(24px,8vh,120px); }
           .img { width: clamp(282px, 32vw, 382px); height: clamp(282px, 32vw, 382px);
                  background:#C4C4C4 center/cover no-repeat;
-                 border-radius: clamp(8px,1.4vw,12px); box-shadow: var(--cover-shadow-x) var(--cover-shadow-y) var(--cover-shadow-blur) var(--cover-shadow-spread) var(--cover-shadow-color); overflow:hidden; }
+                 border-radius: clamp(10px,1.4vw,16px); box-shadow: var(--cover-shadow-x) var(--cover-shadow-y) var(--cover-shadow-blur) var(--cover-shadow-spread) var(--cover-shadow-color); overflow:hidden; }
 
           .meta { text-align: center; }
-          .title { position:relative; font: 800 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-                   color:#fff; height:1.25em; white-space:nowrap; overflow:hidden;
+          .title { position:relative; font: 780 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                   color:#C4C4C4; height:1.25em; white-space:nowrap; overflow:hidden;
                    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
                            mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%); }
           .title .track { display:inline-flex; gap:24px; will-change: transform; }
           .title.marquee .track { animation: marquee var(--dur, 14s) linear infinite; }
           @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(calc(-1 * var(--dist, 0px))) } }
-          .author { color:#BDBDBD; font: 700 clamp(14px,1.8vw,18px)/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
+          .author { color:#B4B4B4; font: 700 clamp(14px,1.8vw,18px)/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
 
           .progress-wrap{ width:min(100%, clamp(305px, 60vw, 475px)); margin: 0 auto; }
           .bar{ height:5px; background:rgba(255,255,255,.14); border-radius:999px; position:relative; }
           .fill{ height:100%; width:0%; background:#fff; border-radius:999px; transition: width .18s linear; }
           .time{ display:flex; justify-content:space-between; color:#BEBEBE; font: 600 12px system-ui; margin-top:6px; }
 
-          .controls{ display:flex; gap: clamp(22px,2vw,28px); justify-content:center; align-items:center; margin:46px 0 6px; flex-wrap: nowrap; }
+          
+/* === ADAPTIVE GAP FOR CONTROLS === */
+
+/* === ADAPTIVE GAP (landscape default) === */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  --controls-offset: 60px;
+  position: relative;
+  top: var(--controls-offset);
+}
+
+
           .btn{ all: unset; width: clamp(39px,6vw,48px); height: clamp(39px,6vw,48px); border-radius: 999px; display:grid; place-items:center; cursor:pointer; }
           .btn.play{ width: clamp(61px,7vw,73px); height: clamp(61px,7vw,73px); }
-          .glyph{ width:100%; height:100%; background-repeat:no-repeat; background-position:center; background-size:contain; }
+          
 
-          /* temp icons */
-          .icon-play{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='52' height='52' fill='none'><ellipse cx='26' cy='26' rx='26' ry='26' fill='%23FFF'/><path fill='%23282729' d='M20 18v16l16-8-16-8Z'/></svg>"); }
-          .icon-pause{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='52' height='52' fill='none'><ellipse cx='26' cy='26' rx='26' ry='26' fill='%23FFF'/><g fill='%23282729'><rect x='19' y='16' width='6' height='20' rx='2'/><rect x='27' y='16' width='6' height='20' rx='2'/></g></svg>"); }
-          .icon-prev{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='none'><g fill='%23FFF'><path d='M16 6v16L4 14l12-8Z'/><rect x='20' y='6' width='2' height='16' rx='1'/></g></svg>"); }
-          .icon-next{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' fill='none'><g fill='%23FFF'><path d='M12 22V6l12 8-12 8Z'/><rect x='6' y='6' width='2' height='16' rx='1'/></g></svg>"); }
-          .icon-back15{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' fill='none'><circle cx='22' cy='22' r='22' fill='rgba(255,255,255,.18)'/><path stroke='%23FFF' stroke-width='2' d='M18 16l-6 6 6 6'/><text x='24' y='26' fill='%23FFF' font-family='Arial' font-size='10' font-weight='700'>15</text></svg>"); }
-          .icon-fwd30{ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' fill='none'><circle cx='22' cy='22' r='22' fill='rgba(255,255,255,.18)'/><path stroke='%23FFF' stroke-width='2' d='M26 16l6 6-6 6'/><text x='10' y='26' fill='%23FFF' font-family='Arial' font-size='10' font-weight='700'>30</text></svg>"); }
-        
-/* === AFF lock: when an overlay is over the track, block interactions === */
+          /* === AFF lock: when an overlay is over the track, block interactions === */
 .track.is-locked{ cursor: not-allowed; }
 .track.is-locked .track-left, .track.is-locked .track-time{ opacity:.95; }
 
@@ -426,6 +538,127 @@ input, textarea, [contenteditable="true"], .allow-select{
 }
 /* Remove tap highlight on touch devices (already used, duplicated safely) */
 * { -webkit-tap-highlight-color: transparent; }
+/* === Cover Glow Layer ======================================== */
+.cover{ position: relative; }
+.cover::before{
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, calc(-50% + var(--glow-offset-y, 20px)));
+  width: var(--glow-w, 292px);
+  height: var(--glow-h, 292px);
+  border-radius: var(--glow-radius, 82px);
+  background: var(--glow-color, rgba(154,62,47,.72));
+  filter: blur(var(--glow-blur, 120px));
+  z-index: 0;
+  pointer-events: none;
+}
+.img{ position: relative; z-index: 1; } /* cover sits above glow */
+
+/* === ICON SIZE OVERRIDES (final, scoped) === */
+.controls img{ display:block; margin:auto; max-width:none; max-height:none; }
+#prev img   { width: var(--size-prev)   !important; height: var(--size-prev)   !important; }
+#back15 img { width: var(--size-back15)!important; height: var(--size-back15)!important; }
+#pp img     { width: var(--size-play)   !important; height: var(--size-play)   !important; }
+#fwd30 img  { width: var(--size-fwd30)  !important; height: var(--size-fwd30)  !important; }
+#next img   { width: var(--size-next)   !important; height: var(--size-next)   !important; }
+
+/* === ICON SIZE VARIABLES + SCOPED OVERRIDES (final) === */
+:root {
+  --size-prev: 30px;
+  --size-back15: 35px;
+  --size-play: 60px;
+  --size-fwd30: 35px;
+  --size-next: 30px;
+}
+.controls img{ display:block; margin:auto; max-width:none; max-height:none; }
+#prev img   { width: var(--size-prev)   !important; height: var(--size-prev)   !important; }
+#back15 img { width: var(--size-back15)!important; height: var(--size-back15)!important; }
+#pp img     { width: var(--size-play)   !important; height: var(--size-play)   !important; }
+#fwd30 img  { width: var(--size-fwd30)  !important; height: var(--size-fwd30)  !important; }
+#next img   { width: var(--size-next)   !important; height: var(--size-next)   !important; }
+
+/* === ICON SIZE VARIABLES + ADAPTIVE BUTTONS === */
+:root {
+  --btn-min: 40px;   /* минимальный размер кнопки */
+  --btn-max: 70px;   /* максимальный размер кнопки */
+
+  --size-prev:    clamp(var(--btn-min), 4vw, var(--btn-max));
+  --size-back15:  clamp(var(--btn-min), 5vw, var(--btn-max));
+  --size-play:    clamp(var(--btn-min), 9vw, var(--btn-max));
+  --size-fwd30:   clamp(var(--btn-min), 5vw, var(--btn-max));
+  --size-next:    clamp(var(--btn-min), 4vw, var(--btn-max));
+}
+
+
+/* === ADAPTIVE GAP FOR CONTROLS === */
+
+/* === ADAPTIVE GAP (landscape default) === */
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  --controls-offset: 60px;
+  position: relative;
+  top: var(--controls-offset);
+}
+
+
+
+#prev img   { width: var(--size-prev)   !important; height: var(--size-prev)   !important; }
+#back15 img { width: var(--size-back15)!important; height: var(--size-back15)!important; }
+#pp img     { width: var(--size-play)   !important; height: var(--size-play)   !important; }
+#fwd30 img  { width: var(--size-fwd30)  !important; height: var(--size-fwd30)  !important; }
+#next img   { width: var(--size-next)   !important; height: var(--size-next)   !important; }
+
+
+/* === PORTRAIT OVERRIDE: when width < height === */
+
+
+
+/* === CONTROLS GAP VARIABLES (orientation aware) === */
+
+
+}
+/* Применяем единым местом */
+
+
+
+/* === Controls gap (single variable, shadow DOM override) === */
+:host{ --controls-gap: clamp(16px, 3vw, 48px); }
+.controls{ gap: var(--controls-gap) !important; }
+
+/* === Inner controls container layout (pure gap control) === */
+#controls.controls{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center !important;   /* не раздвигаем пространство */
+  gap: var(--controls-gap) !important;  /* управляем только gap */
+  width: auto;                           /* ширина по содержимому */
+  margin: 0 auto;                        /* центрируем ряд */
+}
+
+/* === Movable sections (axis-based) === */
+:host{
+  --axis: 0px;
+  --head-dy: 3px;
+  --title-dy: 125px; clamp(125px, 14vw, 95px);
+  --controls-dy: 85px;
+  --chapter-dy: 185px;
+  --progress-dy: 200px;  /* Прогресс бар */
+}
+
+/* make .meta's children participate as siblings */
+.meta{ display: contents; }
+
+/* enforce order & individual vertical offsets */
+.cover{ order:10; position:relative; top: calc(var(--axis) + var(--head-dy)); }
+.title{ order:20; position:relative; top: calc(var(--axis) + var(--title-dy)); }
+.controls{ order:30; position:relative; top: calc(var(--axis) + var(--controls-dy)); }
+.author{ order:40; position:relative; top: calc(var(--axis) + var(--chapter-dy)); }
+.progress-wrap{ order:50; position:relative; top: calc(var(--axis) + var(--progress-dy)); }
 </style>
         <div class="overlay" aria-hidden="true">
           <div class="sheet" role="dialog" aria-label="Аудиоплеер">
@@ -439,12 +672,16 @@ input, textarea, [contenteditable="true"], .allow-select{
               <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
             </div>
             <div class="controls">
-              <button class="btn" id="prev"><div class="glyph icon-prev"></div></button>
-              <button class="btn" id="back15" title="-15 сек"><div class="glyph icon-back15"></div></button>
-              <button class="btn play" id="pp"><div class="glyph icon-play" id="glyph"></div></button>
-              <button class="btn" id="fwd30" title="+30 сек"><div class="glyph icon-fwd30"></div></button>
-              <button class="btn" id="next"><div class="glyph icon-next"></div></button>
-            </div>
+<div class="controls" id="controls">
+
+              <button class="btn" id="prev"><img src="icon/Prev.svg" alt="prev"></button>
+              <button class="btn" id="back15" title="-15 сек"><img src="icon/-15sec.svg" alt="back15"></button>
+              <button class="btn play" id="pp"><img src="icon/Play.svg" alt="pp"></button>
+              <button class="btn" id="fwd30" title="+30 сек"><img src="icon/+30sec.svg" alt="fwd30"></button>
+              <button class="btn" id="next"><img src="icon/Next.svg" alt="next"></button>
+            
+</div>
+</div>
             <audio id="audio" preload="metadata"></audio>
           </div>
         </div>
@@ -794,8 +1031,6 @@ card.addEventListener('keydown', (e) => {
   }
 })();
 </script>
-
-
 
 <script>
 // Suppress double-click / double-tap selection (desktop & mobile)
