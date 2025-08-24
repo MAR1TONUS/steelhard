@@ -8,6 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
+/* Montserrat body font */
+body{ font-family:"Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+h1{ font-family:"Bebas Neue Pro", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
+img{ -webkit-user-drag:none; }
 
 :root {
   /* единая адаптивная переменная для расстояния между кнопками */
@@ -39,7 +45,6 @@
   height: 100%;
   display: block;
 }
-
 
 /* UX: remove orange highlight/outline on tap/focus for interactive elements */
 html, body { -webkit-tap-highlight-color: transparent; }
@@ -224,7 +229,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
   .btn{ display:grid; place-items:center; width:var(--btn-size); height:var(--btn-size); background:transparent; border:0; padding:0; }
   .btn svg{ width:100%; height:100%; display:block; }
 
-
 :root {
   --size-prev:    clamp(25px, 4vw, 32px);
   --size-back15:  clamp(30px, 4.5vw, 38px);
@@ -237,7 +241,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
 #pp img     { width: var(--size-play);   height: var(--size-play); }
 #fwd30 img  { width: var(--size-fwd30);  height: var(--size-fwd30); }
 #next img   { width: var(--size-next);   height: var(--size-next); }
-
 
 /* === Player vertical layout & movable sections === */
 .player{
@@ -255,6 +258,30 @@ html, body { -webkit-tap-highlight-color: transparent; }
 .player .progress     { order:50; position:relative; top: calc(var(--axis) + var(--progress-dy)); width:100%; }
 .player .time         { order:60; position:relative; top: calc(var(--axis) + var(--progress-dy)); width:100%; }
 
+
+          /* Disabled state for nav buttons */
+          .btn[disabled],
+          .btn[aria-disabled="true"],
+          .btn.is-disabled { opacity:.35; filter: grayscale(1); pointer-events:none; cursor: default; }
+    
+</style>
+<style>
+/* === Main list titles: clamp width + CSS ellipsis (no JS) === */
+:root { --card-title-w: clamp(220px, 40vw, 290px); }
+
+.track-title{
+  display: block;
+  max-width: var(--card-title-w);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: var(--t-title-weight, 650);
+  font-size: var(--t-title-size, 13px);
+  line-height: 1.25;
+}
+
+/* If titles sit inside flex containers, ensure they can shrink for ellipsis */
+.track-title, .card-title-wrap{ min-width: 0; }
 </style>
 </head>
 <body>
@@ -346,7 +373,8 @@ html, body { -webkit-tap-highlight-color: transparent; }
   document.querySelectorAll('.track-title[data-title]').forEach(el=>{
     const maxW = parseFloat(getCSS('--track-title-maxw'));
     const txt = el.textContent.trim().replace(/\s+/g,' ');
-    el.setAttribute('title', txt);
+        el.setAttribute('data-full', txt);
+el.setAttribute('title', txt);
 
     ruler.textContent = txt;
     if (ruler.offsetWidth <= maxW) return;
@@ -410,30 +438,99 @@ html, body { -webkit-tap-highlight-color: transparent; }
 </script>
 
 <!-- === AUDIO SHEET v3 (Shadow DOM, fast re-open, -15/+30 skip) === -->
-<script>
-(() => {
-  const DEFAULT_COVER = "img/cover.jpg";
+<template id="audio-sheet-tpl">
 
-  // Simple state machine
-  const State = { IDLE:0, OPENING:1, OPEN:2, CLOSING:3 };
-
-  class AudioSheet extends HTMLElement {
-    constructor(){
-      super();
-      this._state = State.IDLE;
-      const root = this.attachShadow({mode:'open'});
-      root.innerHTML = `
         <style>
-          :host { all: initial; }
-          :host{ --sheet-max-w: 700px; --sheet-radius-top: 18px; --sheet-radius-current: var(--sheet-radius-top); --cover-shadow-x: 0px; --cover-shadow-y: 0px; --cover-shadow-blur: 40px; --cover-shadow-spread: 0px; --cover-shadow-color: rgba(0,0,0,.3);  --glow-w: clamp(282px, 32vw, 365px); --glow-h: clamp(282px, 32vw, 365px) ; --glow-radius: 82px; --glow-blur: 120px; --glow-color: rgba(154,62,47,.72); --glow-offset-y: 28px; }
-          :host, * { box-sizing: border-box; }
-          .overlay { position: fixed; inset: 0; display: grid; align-content: end; justify-items: center;
-                     background: transparent; backdrop-filter: none; pointer-events: none; z-index: 999999;
-                     transition: background 160ms linear; }
-          .overlay.open { background: rgba(7,6,8,0.55); backdrop-filter: blur(8px); pointer-events: auto; }
+          /* === Base reset for component === */
+:host {
+  --tail-color: rgba(124,124,124,.45);
+  --tail-pct: 25; /* artificial tail length (% of bar) */
+
+  --bar-color: #8F8F8F;
+  --fill-color: #ffffff;
+  all: initial; }
+:host, .sheet { 
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; 
+}
+
+/* === Design tokens (variables) === */
+:host{                /* лимит хвоста буфера в % ширины (20–30 для короткого визуального хвоста; 100 = без лимита) */
+
+  /* sizes / controls */
+  --knob-size: 12px;
+  --btn-play-w: clamp(61px, 7vw, 73px);
+  --btn-play-h: clamp(61px, 7vw, 73px);
+  --play-bump: 2px;
+
+  /* layout */
+  --sheet-max-w: 700px;
+  --sheet-radius-top: 18px;
+  --sheet-radius-current: var(--sheet-radius-top);
+  --cover-shadow-x: 0px;
+  --cover-shadow-y: 0px;
+  --cover-shadow-blur: 20px;
+  --cover-shadow-spread: 0px;
+  --cover-shadow-color: rgba(0,0,0,.42);
+}
+
+/* === Hardening: selection/drag === */
+:host, .sheet, .sheet * { 
+  -webkit-user-select: none; 
+  user-select: none; 
+  -webkit-touch-callout: none; 
+}
+img { -webkit-user-drag: none; }
+
+/* === Progress bar & knob === */
+.bar{ 
+  position: relative; 
+  cursor: pointer; 
+  touch-action: none; 
+}
+.knob{
+  position: absolute; 
+  top: 50%; left: 0%;
+  width: var(--knob-size); 
+  height: var(--knob-size);
+  border-radius: 50%; 
+  transform: translate(-50%, -50%);
+  background: #fff; 
+  box-shadow: none; 
+  opacity: .95;
+  pointer-events: none;
+}
+
+/* === Play button === */
+.btn.play{ 
+  width: var(--btn-play-w); 
+  height: var(--btn-play-h); 
+}
+.btn.play img.bump{ transform: scale(1.03); }
+.btn.play img{ 
+  width: 100%; height: 100%; 
+  display: block; 
+  object-fit: contain; 
+  transition: transform .12s ease; 
+  will-change: transform; 
+}
+
+/* === Overlay === */
+:host, * { box-sizing: border-box; }
+.overlay { 
+  position: fixed; inset: 0; 
+  display: grid; align-content: end; justify-items: center;
+  background-color: transparent; backdrop-filter: none; 
+  pointer-events: none; z-index: 999999;
+  transition: background-color 160ms linear; 
+}
+.overlay.open { 
+  background-color: rgba(7,6,8,0.55); 
+  backdrop-filter: blur(8px); 
+  pointer-events: auto; 
+}
 
           .sheet { width: 100vw; height: 100dvh; box-sizing: border-box;
-                   background: rgb(0 0 0); color: #F3F2F7;
+                   background: #423749;
                    border-radius: 0 0 0 0;
                    box-shadow: 0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset; overflow:hidden;
                    padding: clamp(16px,3.2vw,36px) clamp(16px,3.2vw,40px) calc(clamp(16px,3.2vw,40px) + env(safe-area-inset-bottom));
@@ -448,34 +545,42 @@ html, body { -webkit-tap-highlight-color: transparent; }
                  border-radius: clamp(10px,1.4vw,16px); box-shadow: var(--cover-shadow-x) var(--cover-shadow-y) var(--cover-shadow-blur) var(--cover-shadow-spread) var(--cover-shadow-color); overflow:hidden; }
 
           .meta { text-align: center; }
-          .title { position:relative; font: 780 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-                   color:#C4C4C4; height:1.25em; white-space:nowrap; overflow:hidden;
+          .title { overflow:hidden;  position:relative; font: 780 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
+                   color: #f0f0f0; height:1.25em; white-space:nowrap; overflow:hidden;
                    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
                            mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%); }
           .title .track { display:inline-flex; gap:24px; will-change: transform; }
-          .title.marquee .track { animation: marquee var(--dur, 14s) linear infinite; }
+          .title.marquee .track{ animation: marquee var(--dur, 14s) linear infinite !important; }
           @keyframes marquee { from { transform: translateX(0) } to { transform: translateX(calc(-1 * var(--dist, 0px))) } }
           .author { color:#B4B4B4; font: 700 clamp(14px,1.8vw,18px)/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
 
-          .progress-wrap{ width:min(100%, clamp(305px, 60vw, 475px)); margin: 0 auto; }
-          .bar{ height:5px; background:rgba(255,255,255,.14); border-radius:999px; position:relative; }
-          .fill{ height:100%; width:0%; background:#fff; border-radius:999px; transition: width .18s linear; }
-          .time{ display:flex; justify-content:space-between; color:#BEBEBE; font: 600 12px system-ui; margin-top:6px; }
-
+          .progress-wrap{ width:min(100%, clamp(320px, 60vw, 475px)); margin: 0 auto; }
+          .bar{ height:4.5px; background:var(--bar-color, rgba(255,255,255,.14)); border-radius:999px; position:relative; }
           
-/* === ADAPTIVE GAP FOR CONTROLS === */
-
+/* artificial "tail" segment (independent of real buffer) */
+.tail{
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 0%;
+  background: var(--tail-color, rgba(124,124,124,.45));
+  border-radius: 999px;
+  z-index: 0;                /* ниже fill */
+  pointer-events: none;
+  transition: left .22s linear, width .22s linear;
+  will-change: left, width;
+}
+.fill{ height:100%; width:0%; background:var(--fill-color, #ffffff); border-radius:999px;  }
+          
+  
 /* === ADAPTIVE GAP (landscape default) === */
 .controls {
   display: flex;
   align-items: center;
   justify-content: center;
   
-  --controls-offset: 60px;
   position: relative;
-  top: var(--controls-offset);
+  top: 0; transform: translateY(var(--controls-dy));
 }
-
 
           .btn{ all: unset; width: clamp(39px,6vw,48px); height: clamp(39px,6vw,48px); border-radius: 999px; display:grid; place-items:center; cursor:pointer; }
           .btn.play{ width: clamp(61px,7vw,73px); height: clamp(61px,7vw,73px); }
@@ -501,26 +606,6 @@ input, textarea, [contenteditable="true"], .allow-select{
   user-select: text;
   -webkit-touch-callout: default;
 }
-/* Remove tap highlight on touch devices (already used, duplicated safely) */
-* { -webkit-tap-highlight-color: transparent; }
-/* === Cover Glow Layer ======================================== */
-.cover{ position: relative; }
-.cover::before{
-  content: "";
-  position: absolute;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, calc(-50% + var(--glow-offset-y, 20px)));
-  width: var(--glow-w, 292px);
-  height: var(--glow-h, 292px);
-  border-radius: var(--glow-radius, 82px);
-  background: var(--glow-color, rgba(154,62,47,.72));
-  filter: blur(var(--glow-blur, 120px));
-  z-index: 0;
-  pointer-events: none;
-}
-.img{ position: relative; z-index: 1; } /* cover sits above glow */
-
 /* === ICON SIZE VARIABLES + SCOPED OVERRIDES (final) === */
 :root {
   --size-prev: 30px;
@@ -536,14 +621,12 @@ input, textarea, [contenteditable="true"], .allow-select{
 #fwd30 img  { width: var(--size-fwd30)  !important; height: var(--size-fwd30)  !important; }
 #next img   { width: var(--size-next)   !important; height: var(--size-next)   !important; }
 
-
-}
 /* Применяем единым местом */
 
 /* === Controls gap (single variable, shadow DOM override) === */
-:host{ --controls-gap: clamp(16px, 3vw, 48px); }
-.controls{ gap: var(--controls-gap) !important; }
-
+:host{
+  --controls-gap: clamp(16px, 3vw, 48px);
+}
 /* === Inner controls container layout (pure gap control) === */
 #controls.controls{
   display: inline-flex;
@@ -555,13 +638,14 @@ input, textarea, [contenteditable="true"], .allow-select{
 }
 
 /* === Movable sections (axis-based) === */
-:host{
+:host{ /* cap buffer width in % of bar (set 20..30 for short-tail look) */
+
   --axis: 0px;
   --head-dy: 20px;
-  --title-dy: 135px;
-  --controls-dy: 85px;
+  --title-dy: 150px;
+  --controls-dy: 83px;
   --chapter-dy: 185px;
-  --progress-dy: 205px;  /* Прогресс бар */
+  --progress-dy: 205px;
 }
 
 /* make .meta's children participate as siblings */
@@ -573,6 +657,24 @@ input, textarea, [contenteditable="true"], .allow-select{
 .controls{ order:30; position:relative; top: calc(var(--axis) + var(--controls-dy)); }
 .author{ order:40; position:relative; top: calc(var(--axis) + var(--chapter-dy)); }
 .progress-wrap{ order:50; position:relative; top: calc(var(--axis) + var(--progress-dy)); }
+
+/* time inside player (shadow) */
+.time{
+  display:flex;
+  justify-content:space-between;
+  color: #BEBEBE;
+  font-family: Montserrat;
+  font-size: clamp(12px, 1.1vw, 16px);
+  font-weight: 600;
+  margin-top: 6px;
+  width: 100%;
+}
+
+    /* buffered portion of audio (loaded) */
+    /* layering: buffer behind fill behind knob */
+    .fill{ z-index: 1; position:absolute; left:0; top:0; bottom:0; }
+    .knob{ z-index: 2; }
+    
 </style>
         <div class="overlay" aria-hidden="true">
           <div class="sheet" role="dialog" aria-label="Аудиоплеер">
@@ -582,11 +684,13 @@ input, textarea, [contenteditable="true"], .allow-select{
               <div class="author" id="author">Автор</div>
             </div>
             <div class="progress-wrap">
-              <div class="bar"><div class="fill" id="fill"></div></div>
+              <div class="bar">
+                </div><div class="fill" id="fill"></div>
+                <div class="knob" id="knob" aria-hidden="true"></div>
+              </div>
               <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
             </div>
-            <div class="controls">
-<div class="controls" id="controls">
+            <div class="controls" id="controls">
 
               <button class="btn" id="prev"><img src="icon/Prev.svg" alt="prev"></button>
               <button class="btn" id="back15" title="-15 сек"><img src="icon/-15sec.svg" alt="back15"></button>
@@ -595,21 +699,37 @@ input, textarea, [contenteditable="true"], .allow-select{
               <button class="btn" id="next"><img src="icon/Next.svg" alt="next"></button>
             
 </div>
-</div>
             <audio id="audio" preload="metadata"></audio>
           </div>
         </div>
-      `;
+      
+</template>
+<script>
+(() => {
+  const DEFAULT_COVER = "img/cover.jpg";
 
-      // refs
+  // Simple state machine
+  const State = { IDLE:0, OPENING:1, OPEN:2, CLOSING:3 };
+
+  class AudioSheet extends HTMLElement {
+    constructor(){
+      super();
+      this._state = State.IDLE;
+      const root = this.attachShadow({mode:'open'});
+      const tpl = document.getElementById('audio-sheet-tpl');
+      if (tpl) root.appendChild(tpl.content.cloneNode(true));
+// refs
       const $o = this.$o = root.querySelector('.overlay');
       const $s = this.$s = root.querySelector('.sheet');
       // prevent clicks inside sheet from bubbling to overlay
       this.$s.addEventListener('click', (e)=> e.stopPropagation());
-      this.$title = root.querySelector('#title');
+      this.$title = root.querySelector('#title'); queueMicrotask(() => this._bindTitleObserver?.());
       this.$author = root.querySelector('#author');
       this.$cover = root.querySelector('#cover');
       this.$fill = root.querySelector('#fill');
+      this.$tail = root.querySelector('#tail');
+      this.$bar  = root.querySelector('.bar');
+      this.$buffer = root.querySelector('#tail');
       this.$cur = root.querySelector('#cur');
       this.$dur = root.querySelector('#dur');
       this.$pp = root.querySelector('#pp');
@@ -635,7 +755,6 @@ input, textarea, [contenteditable="true"], .allow-select{
       // helper to announce text once
       this._notify = (msg)=>{ try { if (!msg) return; this.$status.textContent = String(msg); } catch(e){} };
 
-
       
 
       
@@ -658,6 +777,8 @@ input, textarea, [contenteditable="true"], .allow-select{
       this.playlist = [];
       this.index = 0;
       this._playing = false;
+      this._bufferIntroDone = false;
+      this._bufferEverAnimated = false;
 
       // helpers
       const sec = (s)=>{ if(!isFinite(s)) return "00:00"; s=Math.max(0,Math.floor(s)); const m=Math.floor(s/60), ss=String(s%60).padStart(2,'0'); return `${String(m).padStart(2,'0')}:${ss}`; };
@@ -665,33 +786,41 @@ input, textarea, [contenteditable="true"], .allow-select{
 
       // audio events
       this.$audio.addEventListener('loadedmetadata', ()=> {
-        // announce metadata loaded
-        this._notify('Длина трека: ' + this.$dur.textContent);
+        this.$dur.textContent = sec(this.$audio.duration);
+        this.renderProgress();
+        this.renderTail?.();
       });
+
+      let __raf = null;
+      this.$audio.addEventListener('timeupdate', ()=>{
+        if (__raf) cancelAnimationFrame(__raf);
+        __raf = requestAnimationFrame(()=>{
+          this.renderProgress();
+          this.renderTail?.();
+          __raf = null;
+        });
+      });
+
       // buffering & error states
       this.$audio.addEventListener('waiting', ()=>{ this._notify('Буферизация…'); });
-      this.$audio.addEventListener('playing', ()=>{ this._notify('Воспроизведение'); });
+      this.$audio.addEventListener('playing', ()=>{ this._notify('Воспроизведение'); this.renderTail?.(); });
       this.$audio.addEventListener('stalled', ()=>{ this._notify('Поток прерван, пытаюсь восстановить…'); });
       this.$audio.addEventListener('error', ()=>{ 
         const code = (this.$audio.error && this.$audio.error.code) || 0;
         this._notify('Ошибка аудио' + (code? (' (код ' + code + ')') : ''));
       });
-      this.$audio.addEventListener('loadedmetadata', ()=> {
-        this.$dur.textContent = sec(this.$audio.duration);
-        this.renderProgress();
-      });
-      let __raf=null; this.$audio.addEventListener('timeupdate', ()=>{ if(__raf) return; __raf=requestAnimationFrame(()=>{ this.renderProgress(); __raf=null; }); });
-      this.$audio.addEventListener('play', ()=>{ this._playing = true; this.$glyph.classList.remove('icon-play'); this.$glyph.classList.add('icon-pause'); });
-      this.$audio.addEventListener('pause', ()=>{ this._playing = false; this.$glyph.classList.add('icon-play'); this.$glyph.classList.remove('icon-pause'); });
-      this.$audio.addEventListener('ended', ()=>{ this._playing = false; this.$glyph.classList.add('icon-play'); this.$glyph.classList.remove('icon-pause'); });
 
-      // controls
+      // play/pause/end glyphs
+      this.$audio.addEventListener('play',  ()=>{ this._playing = true;  this.$glyph?.classList.remove('icon-play'); this.$glyph?.classList.add('icon-pause'); });
+      this.$audio.addEventListener('pause', ()=>{ this._playing = false; this.$glyph?.classList.add('icon-play');    this.$glyph?.classList.remove('icon-pause'); });
+      this.$audio.addEventListener('ended', ()=>{ this._playing = false; this.$glyph?.classList.add('icon-play');    this.$glyph?.classList.remove('icon-pause'); });
+// controls
       this.$pp.addEventListener('click', ()=> {
         if (!this.$audio.src) return;
         if (this._playing) this.$audio.pause(); else this.$audio.play().catch(err=>{ this._notify('Браузер запретил автостарт. Нажмите “Play”.'); });
       });
-      this.$prev.addEventListener('click', ()=> { if(this.index>0){ this.loadByIndex(this.index-1); } });
-      this.$next.addEventListener('click', ()=> { if(this.index+1<this.playlist.length){ this.loadByIndex(this.index+1); } });
+      this.$prev.addEventListener('click', ()=> { if(this.$prev.hasAttribute('disabled')) return; if(this.index>0){ this.loadByIndex(this.index-1); } });
+      this.$next.addEventListener('click', ()=> { if(this.$next.hasAttribute('disabled')) return; if(this.index+1<this.playlist.length){ this.loadByIndex(this.index+1); } });
       this.$back15.addEventListener('click', ()=> {
         if (!this.$audio.src || !isFinite(this.$audio.duration)) return;
         this.$audio.currentTime = clamp(this.$audio.currentTime - 15, 0, this.$audio.duration);
@@ -754,6 +883,27 @@ input, textarea, [contenteditable="true"], .allow-select{
         this.$fill.style.width = pct + "%";
         this.$cur.textContent = sec(this.$audio.currentTime);
       };
+      // Artificial tail: short segment ahead of the knob (independent of real buffer)
+      this.renderTail = ()=>{
+        try {
+    const a = this.$audio;
+    const d = a && a.duration;
+    const tail = this.$tail;
+    if (!a || !isFinite(d) || d <= 0 || !tail){
+      if (tail){ tail.style.left='0%'; tail.style.width='0%'; }
+      return;
+    }
+    const leftPct  = (a.currentTime / d) * 100;
+    const cap      = parseFloat(getComputedStyle(this.$s).getPropertyValue('--tail-pct')) || 25;
+    const widthPct = Math.min(100 - leftPct, cap);
+    tail.style.left  = leftPct + '%';
+    tail.style.width = widthPct + '%';
+  } catch(e){}
+      };
+    
+
+    
+
 
       // ensure initial CSS values
       this._resetSheetInstant();
@@ -770,6 +920,8 @@ input, textarea, [contenteditable="true"], .allow-select{
           this.$o.setAttribute('aria-hidden','true');
           this.$audio.pause();
           this._playing = false;
+      this._bufferIntroDone = false;
+      this._bufferEverAnimated = false;
           this._resetSheetInstant();
           this._state = State.IDLE;
         }
@@ -811,6 +963,8 @@ input, textarea, [contenteditable="true"], .allow-select{
           this.$o.setAttribute('aria-hidden','true');
           this.$audio.pause();
           this._playing = false;
+      this._bufferIntroDone = false;
+      this._bufferEverAnimated = false;
           this._resetSheetInstant();
           this._state = State.IDLE;
         }
@@ -820,6 +974,8 @@ input, textarea, [contenteditable="true"], .allow-select{
         this.$o.setAttribute('aria-hidden','true');
         this.$audio.pause();
         this._playing = false;
+      this._bufferIntroDone = false;
+      this._bufferEverAnimated = false;
         this._resetSheetInstant();
         this._state = State.IDLE;
         clearTimeout(this._closeGuard);
@@ -831,7 +987,7 @@ input, textarea, [contenteditable="true"], .allow-select{
     setPlaylist(list, startIndex=0){
       this.playlist = Array.isArray(list) ? list : [];
       this.index = Math.min(Math.max(0, startIndex|0), Math.max(this.playlist.length-1,0));
-      // nav buttons state could be updated here if we dim them in future
+      this.updateNav(); // keep nav buttons in sync
     }
 
     load(track){
@@ -845,17 +1001,24 @@ input, textarea, [contenteditable="true"], .allow-select{
       const s1 = document.createElement('span'); s1.textContent = title;
       const s2 = document.createElement('span'); s2.textContent = title; s2.setAttribute('aria-hidden','true');
       tr.appendChild(s1); tr.appendChild(s2); this.$title.appendChild(tr);
-      requestAnimationFrame(()=>{
-        const boxW = this.$title.clientWidth, textW = s1.scrollWidth;
+      const ensure = () => {
+        const boxW = this.$title.clientWidth || 0, textW = s1.scrollWidth || 0;
         if (textW > boxW + 2){
-          const gap = 24; this.$title.style.setProperty('--dist', (textW + gap) + 'px');
-          const duration = Math.max(8, (textW + gap) / 18); this.$title.style.setProperty('--dur', duration + 's');
+          const gap = 24;
+          this.$title.style.setProperty('--dist', (textW + gap) + 'px');
+          const duration = Math.max(8, (textW + gap) / 18);
+          this.$title.style.setProperty('--dur', duration + 's');
           this.$title.classList.add('marquee');
         } else {
-          this.$title.classList.remove('marquee'); this.$title.textContent = title;
+          this.$title.classList.remove('marquee');
+          this.$title.textContent = title;
         }
-      });
-      this.$author.textContent = author || '';
+      };
+      // delay measurement: 2x RAF + microtask
+      requestAnimationFrame(()=> requestAnimationFrame(()=> { setTimeout(ensure, 0); }));
+      if (document.fonts && document.fonts.ready) { try { document.fonts.ready.then(()=> ensure()); } catch(_){} }
+      setTimeout(ensure, 60);
+this.$author.textContent = author || '';
       // только валидный URL идёт как cover, всё остальное — дефолт
 const pickCover = (t)=>{
   const c = (t?.cover || '').trim();
@@ -876,24 +1039,123 @@ const pickCover = (t)=>{
   img.src = url;
 }
       this.$audio.src = t.src || '';
+      if (this.$tail){ this.$tail.style.left='0%'; this.$tail.style.width='0%'; }
+      this._bufferIntroDone = false;
+      if (this.$buffer){ this.$buffer.style.left='0%'; this.$buffer.style.width='0%'; }
+      if (this.$buffer) this.$buffer.style.width = '0%';
 if (!t.src) {
   this._notify('У трека не указан путь к аудиофайлу');
 }
+
+    this.updateNav();
 
     }
 
     open(track){
       // prepare data
-      if (track) this.load(track); else this.load();
+      // Build playlist from page tracks if not set
+      if (!Array.isArray(this.playlist) || this.playlist.length===0){
+        try{
+          const cards = Array.from(document.querySelectorAll('.track[data-src]:not(.is-locked)'));
+          const list = cards.map(c=>({ partTitle: c.getAttribute('data-title') || c.querySelector('.track-title')?.textContent?.trim() || 'Без названия',
+                                       partLabel: c.getAttribute('data-part')  || c.querySelector('.track-chapter')?.textContent?.trim() || '',
+                                       src: c.getAttribute('data-src') || '', cover: c.getAttribute('DEFAULT_COVER') || '' }));
+          this.setPlaylist(list, 0);
+        }catch(_){}
+      }
+      if (track){
+        // pick index by src if possible
+        const idx = this.playlist.findIndex(t => (t.src && track.src && t.src===track.src));
+        if (idx >= 0) this.index = idx;
+        this.load(track);
+      } else {
+        this.load();
+      }
       // fast reaction: ensure we reset then show overlay asap
       this._resetSheetInstant();
       this._showOverlay();
+      this.updateNav();
     }
 
     close(){ this._hideOverlay(); }
   }
 
-  customElements.define('x-audio-sheet', AudioSheet);
+  
+
+  
+  AudioSheet.prototype.updateNav = function(){
+    try{
+      const n = this.playlist.length|0;
+      const atStart = (this.index <= 0) || (n <= 1);
+      const atEnd   = (this.index >= n-1) || (n <= 1);
+      const apply = (btn, disabled)=>{
+        if (!btn) return;
+        if (disabled){
+          btn.setAttribute('disabled','');
+          btn.setAttribute('aria-disabled','true');
+          btn.style.opacity = '.35';
+          btn.style.filter = 'grayscale(1)';
+          btn.style.pointerEvents = 'none';
+          btn.style.cursor = 'default';
+        } else {
+          btn.removeAttribute('disabled');
+          btn.setAttribute('aria-disabled','false');
+          btn.style.opacity = '';
+          btn.style.filter = '';
+          btn.style.pointerEvents = '';
+          btn.style.cursor = '';
+        }
+      };
+      apply(this.$prev, atStart);
+      apply(this.$next, atEnd);
+    }catch(e){}
+  };
+
+
+  AudioSheet.prototype.loadByIndex = function(i){
+    if (!Array.isArray(this.playlist) || this.playlist.length===0) return;
+    const n = this.playlist.length;
+    const clamped = Math.max(0, Math.min(i|0, n-1));
+    this.index = clamped;
+    this.load(this.playlist[this.index]);
+    this.updateNav();
+  };
+
+  
+  // Keep title marquee responsive to container width and font loads
+  AudioSheet.prototype._bindTitleObserver = function(){
+    try{
+      if (this._titleRO) return;
+      const RO = window.ResizeObserver; if (!RO) return; const ro = new RO(()=>{
+        const t = this.playlist?.[this.index] || null;
+        // Re-run load title only (avoid audio restart)
+        if (!t) return;
+        const title = t.partTitle || t.title || 'Без названия';
+        this.$title.classList.remove('marquee');
+        this.$title.innerHTML = '';
+        const tr = document.createElement('div'); tr.className = 'track';
+        const s1 = document.createElement('span'); s1.textContent = title;
+        const s2 = document.createElement('span'); s2.textContent = title; s2.setAttribute('aria-hidden','true');
+        tr.appendChild(s1); tr.appendChild(s2); this.$title.appendChild(tr);
+        const gap = 24;
+        const boxW = this.$title.clientWidth || 0, textW = s1.scrollWidth || 0;
+        if (textW > boxW + 2){
+          this.$title.style.setProperty('--dist', (textW + gap) + 'px');
+          const duration = Math.max(8, (textW + gap) / 18);
+          this.$title.style.setProperty('--dur', duration + 's');
+          this.$title.classList.add('marquee');
+        }
+      else {
+        this.$title.classList.remove('marquee');
+        this.$title.textContent = title;
+      }
+
+      });
+      ro.observe(this.$title);
+      this._titleRO = ro;
+    }catch(_){}
+  };
+customElements.define('x-audio-sheet', AudioSheet);
 
   // Mount single instance
   const sheetEl = document.createElement('x-audio-sheet');
@@ -904,13 +1166,21 @@ if (!t.src) {
     open: (track) => sheetEl.open(track),
     setPlaylist: (list, i) => sheetEl.setPlaylist(list, i),
   };
+// flush queued opens if any
+try{
+  const q = window.__xa_queue || [];
+  while (q.length) { window.AudioSheet.open(q.shift()); }
+}catch(_){ }
+
 
   // ====== Binding: fast pointerdown on active cards ======
   function getMeta(node){
-    const title = node.getAttribute('data-title')
-              || node.querySelector('.track-title')?.textContent?.trim()
-              || node.textContent?.trim()
-              || 'Аудио';
+  const tt = node.querySelector('.track-title');
+  const liveTxt = tt?.textContent?.trim();
+  const fullTxt = tt?.getAttribute('data-full')?.trim();
+  let title = liveTxt || node.getAttribute('data-title') || node.textContent?.trim() || 'Аудио';
+  if (liveTxt && (liveTxt.includes('…') || /\.\.\.$/.test(liveTxt)) && fullTxt) title = fullTxt;
+  
     const label = node.getAttribute('data-part') 
               || node.querySelector('.track-chapter')?.textContent?.trim()
               || '';
@@ -929,7 +1199,13 @@ if (!t.src) {
 (function(){
   function openFromCard(card){
     const meta = {
-      partTitle: card.getAttribute('data-title') || card.querySelector('.track-title')?.textContent?.trim() || 'Без названия',
+      partTitle: (function(){
+  const tt = card.querySelector('.track-title');
+  const liveTxt = tt?.textContent?.trim();
+  const fullTxt = tt?.getAttribute('data-full')?.trim();
+  if (liveTxt && (liveTxt.includes('…') || /\.\.\.$/.test(liveTxt)) && fullTxt) return fullTxt;
+  return liveTxt || card.getAttribute('data-title') || 'Без названия';
+})(),
       partLabel: card.getAttribute('data-part')  || card.querySelector('.track-chapter')?.textContent?.trim() || '',
       src: card.getAttribute('data-src') || '',
       cover: card.getAttribute('DEFAULT_COVER') || ''
@@ -938,12 +1214,13 @@ if (!t.src) {
 if (window.AudioSheet?.open){
   window.AudioSheet.open(meta);
 } else {
-  console.error('[AudioSheet] Глобальный объект не найден. Проверь загрузку компонента.');
+  (window.__xa_queue = window.__xa_queue || []).push(meta);
 }
   }
 
   function bind(){
-    document.querySelectorAll('.track[data-src]:not(.is-locked)').forEach(card => {
+    document.querySelectorAll('[data-open-player], .track:not(.is-locked), .audio-track:not(.is-locked), .playlist-item:not(.is-locked), .js-open-player:not(.is-locked)')
+      .forEach(card => {
       // avoid double-binding
       if (card.__xa_bound) return;
       card.__xa_bound = true;
@@ -1043,6 +1320,152 @@ card.addEventListener('keydown', (e) => {
       }
     }
   });
+})();
+</script>
+
+<script>
+// === Player Enhancer: single central toggle (Play/Pause), synced knob, safe bump, drag/contextmenu block ===
+(function(){
+  const ready = () => {
+    const sheetEl = document.querySelector('x-audio-sheet');
+    if (!sheetEl) return;
+    try {
+      // refs
+      sheetEl.$ppImg = sheetEl.$pp?.querySelector('img') || sheetEl.$ppImg;
+      sheetEl.$knob  = sheetEl.shadowRoot?.getElementById('knob') || sheetEl.$knob;
+      sheetEl._icons = { play: 'icon/Play.svg', pause: 'icon/Pause.svg' };
+
+      // preload icons and ensure Pause.svg exists, otherwise fallback
+      const _preload = (url)=> new Promise(res=>{ const im=new Image(); im.onload=()=>res(true); im.onerror=()=>res(false); im.src=url; });
+      (async ()=>{
+        const okPause = await _preload(sheetEl._icons.pause);
+        if (!okPause){ console.warn('[AudioSheet] Pause icon not found:', sheetEl._icons.pause); sheetEl._icons.pause = sheetEl._icons.play; }
+      })();
+
+      // sync knob WITH renderProgress (moves together with fill)
+      try{
+        if (!sheetEl.__origRender){
+          sheetEl.__origRender = sheetEl.renderProgress?.bind(sheetEl);
+          sheetEl.renderProgress = function(){
+            if (this.__origRender) this.__origRender();
+            try{
+              const a = this.$audio;
+              const pct = (a && a.duration>0) ? (a.currentTime / a.duration)*100 : 0;
+              if (this.$knob) this.$knob.style.left = pct + '%';
+            }catch(e){}
+          };
+        }
+      }catch(e){ console.warn('[Enhancer] render patch failed', e); }
+
+      // toggle behavior on central Play button
+      if (sheetEl.$pp){
+        sheetEl.$pp.addEventListener('click', (e)=>{
+          e.preventDefault();
+          const a = sheetEl.$audio; if (!a || !a.src) return;
+          // bump on every click
+          try{
+            const img = sheetEl.$ppImg;
+            if (img){
+              img.classList.remove('bump'); void img.offsetWidth; // reflow to restart animation
+              img.classList.add('bump');
+              setTimeout(()=> img.classList.remove('bump'), 140);
+            }
+          }catch(_){}
+          if (a.paused) a.play().catch(()=>{}); else a.pause();
+        }, {capture:true});
+      }
+
+      // swap icon + bump on state changes
+      if (sheetEl.$audio){
+        sheetEl.$audio.addEventListener('play',  ()=>{ try{ if(sheetEl.$ppImg && sheetEl._icons.pause){ if(sheetEl.$ppImg.src.indexOf(sheetEl._icons.pause)===-1) sheetEl.$ppImg.src = sheetEl._icons.pause; } sheetEl.$ppImg?.classList.add('bump'); setTimeout(()=> sheetEl.$ppImg?.classList.remove('bump'), 140);}catch(e){} });
+        sheetEl.$audio.addEventListener('pause', ()=>{ try{ if(sheetEl.$ppImg && sheetEl._icons.play){ if(sheetEl.$ppImg.src.indexOf(sheetEl._icons.play)===-1) sheetEl.$ppImg.src = sheetEl._icons.play; } }catch(e){} });
+        sheetEl.$audio.addEventListener('ended', ()=>{ try{ if(sheetEl.$ppImg && sheetEl._icons.play){ if(sheetEl.$ppImg.src.indexOf(sheetEl._icons.play)===-1) sheetEl.$ppImg.src = sheetEl._icons.play; } }catch(e){} });
+      }
+
+      
+      // ===== Seek by clicking/dragging on progress bar =====
+      try{
+        const bar  = sheetEl.shadowRoot?.querySelector('.bar');
+        const fill = sheetEl.$fill ?? sheetEl.shadowRoot?.getElementById('fill');
+        const a    = sheetEl.$audio;
+        if (bar && a){
+          let dragging = false, raf = null;
+
+          const clamp = (v,min,max)=> v<min?min: v>max?max: v;
+          const pctFromX = (clientX)=>{
+            const r = bar.getBoundingClientRect();
+            return clamp((clientX - r.left) / r.width, 0, 1);
+          };
+          const applySeek = (pct)=>{
+            if (!isFinite(a.duration) || a.duration<=0) return;
+            a.currentTime = pct * a.duration;
+            // immediate visual feedback
+            try{
+              const p = pct*100;
+              if (fill) fill.style.width = p + '%';
+              if (sheetEl.$knob) sheetEl.$knob.style.left = p + '%';
+            }catch(e){}
+          };
+
+          const onDown = (e)=>{
+            if (!isFinite(a.duration) || a.duration<=0) return;
+            dragging = true;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            applySeek(pctFromX(clientX));
+            window.addEventListener('pointermove', onMove, {passive:false});
+            window.addEventListener('pointerup', onUp, {passive:false, once:true});
+            window.addEventListener('touchmove', onMove, {passive:false});
+            window.addEventListener('touchend', onUp, {passive:false, once:true});
+          };
+          const onMove = (e)=>{
+            if (!dragging) return;
+            e.preventDefault();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            if (raf) return;
+            raf = requestAnimationFrame(()=>{ raf=null; applySeek(pctFromX(clientX)); });
+          };
+          const onUp = (e)=>{
+            dragging = false;
+            window.removeEventListener('pointermove', onMove, {passive:false});
+            window.removeEventListener('touchmove', onMove, {passive:false});
+          };
+
+          bar.addEventListener('pointerdown', onDown, {passive:false});
+          bar.addEventListener('touchstart', onDown, {passive:false});
+          bar.addEventListener('click', (e)=>{
+            e.preventDefault();
+            const clientX = e.clientX ?? (e.touches && e.touches[0]?.clientX);
+            if (clientX!=null) applySeek(pctFromX(clientX));
+          });
+        }
+      }catch(e){ console.warn('[Enhancer] seek init failed', e); }
+
+      // block drag/contextmenu inside shadow
+      sheetEl.shadowRoot?.addEventListener('dragstart', e => e.preventDefault());
+      sheetEl.shadowRoot?.addEventListener('contextmenu', e => e.preventDefault());
+    } catch(e){ console.warn('[Enhancer] init error', e); }
+  };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ready);
+  else ready();
+
+  // global: block drag/contextmenu on icons/images
+  document.addEventListener('dragstart', e => { if (e.target.closest('img, svg')) e.preventDefault(); }, true);
+  document.addEventListener('contextmenu', e => { if (e.target.closest('img, svg, button')) e.preventDefault(); }, true);
+})();</script>
+
+<script>
+(() => {
+  function updateEllipsisTitles(){
+    document.querySelectorAll('.track-title').forEach(el => {
+      const clipped = el.scrollWidth > el.clientWidth + 1;
+      if (clipped) el.setAttribute('title', el.textContent.trim());
+      else el.removeAttribute('title');
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', updateEllipsisTitles);
+  else updateEllipsisTitles();
+  let to; window.addEventListener('resize', ()=>{ clearTimeout(to); to = setTimeout(updateEllipsisTitles, 150); });
 })();
 </script>
 </body>
