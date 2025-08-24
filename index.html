@@ -443,8 +443,8 @@ el.setAttribute('title', txt);
         <style>
           /* === Base reset for component === */
 :host {
-  --tail-color: rgba(124,124,124,.45);
-  --tail-pct: 25; /* artificial tail length (% of bar) */
+  --tail-color: #6E6E6E;
+  --tail-pct: 8; /* artificial tail length (% of bar) */
 
   --bar-color: #8F8F8F;
   --fill-color: #ffffff;
@@ -546,7 +546,7 @@ img { -webkit-user-drag: none; }
 
           .meta { text-align: center; }
           .title { overflow:hidden;  position:relative; font: 780 clamp(18px,2.4vw,28px)/1.12 system-ui, -apple-system, Segoe UI, Roboto, Arial;
-                   color: #f0f0f0; height:1.25em; white-space:nowrap; overflow:hidden;
+                   color: #C4C4C4; height:1.25em; white-space:nowrap; overflow:hidden;
                    -webkit-mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
                            mask-image:linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%); }
           .title .track { display:inline-flex; gap:24px; will-change: transform; }
@@ -555,15 +555,15 @@ img { -webkit-user-drag: none; }
           .author { color:#B4B4B4; font: 700 clamp(14px,1.8vw,18px)/1.2 system-ui, -apple-system, Segoe UI, Roboto, Arial; }
 
           .progress-wrap{ width:min(100%, clamp(320px, 60vw, 475px)); margin: 0 auto; }
-          .bar{ height:4.5px; background:var(--bar-color, rgba(255,255,255,.14)); border-radius:999px; position:relative; }
+          .bar{ height:4.5px; background: var(--bar-color); border-radius:999px; position:relative; }
           
 /* artificial "tail" segment (independent of real buffer) */
 .tail{
   position: absolute;
   left: 0; top: 0; bottom: 0;
   width: 0%;
-  background: var(--tail-color, rgba(124,124,124,.45));
-  border-radius: 999px;
+  background: var(--tail-color);
+  border-radius: 2px;
   z-index: 0;                /* ниже fill */
   pointer-events: none;
   transition: left .22s linear, width .22s linear;
@@ -685,9 +685,11 @@ input, textarea, [contenteditable="true"], .allow-select{
             </div>
             <div class="progress-wrap">
               <div class="bar">
-                </div><div class="fill" id="fill"></div>
+                <div class="tail" id="tail"></div>
+
+                <div class="fill" id="fill"></div>
                 <div class="knob" id="knob" aria-hidden="true"></div>
-              </div>
+                            </div>
               <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
             </div>
             <div class="controls" id="controls">
