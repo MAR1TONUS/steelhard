@@ -93,16 +93,20 @@
 /* ШТОРКА на весь экран — видно край при перетягивании */
 .sheet{
   position:relative;
-  width:100vw; height:100vh;
-  padding: clamp(12px, 3vh, 40px) clamp(12px, 3vw, 40px);
+  width:100vw;
+  height: calc(var(--vh, 1vh) * 100);
+  padding:
+    calc(clamp(12px, 3vh, 40px) + env(safe-area-inset-top, 0px))
+    calc(clamp(12px, 3vw, 40px) + env(safe-area-inset-right, 0px))
+    calc(clamp(12px, 3vh, 40px) + env(safe-area-inset-bottom, 0px))
+    calc(clamp(12px, 3vw, 40px) + env(safe-area-inset-left, 0px));
   box-sizing:border-box;
-
   background:var(--bg);
   border-radius:var(--sheet-radius);
   box-shadow:var(--sheet-shadow);
-
   transform:translateY(100%);
 }
+
 .overlay.open .sheet{
   transition: transform var(--sheet-open-dur) var(--sheet-ease);
   transform: translateY(0);
