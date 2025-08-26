@@ -592,5 +592,17 @@ html, body { -webkit-tap-highlight-color: transparent; }
   });
 </script>
 
+<script>
+(function () {
+  function setVH() {
+    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
+    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', setVH);
+})();
+</script>
+
 </body>
 </html>
