@@ -1,0 +1,261 @@
+.overlay{
+  position:fixed;
+  inset:0;
+  display:grid;
+  place-items:end center;
+  background:transparent;
+  pointer-events:none;
+  z-index:999999;
+}
+.overlay.open{ pointer-events:auto; }
+
+.sheet{
+  width:100vw;
+  height:100vh; height:100dvh;
+  background:var(--bg);
+  box-shadow:0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
+  transform:translateY(100%);
+  transition:transform var(--sheet-open-dur) var(--sheet-ease);
+  will-change:transform;
+  position:relative; /* якорь для абсолютного центрирования */
+}
+.overlay.open .sheet{ transform:translateY(0%); }
+
+/* =========================
+   Переменные (портрет)
+   ========================= */
+:host{
+  /* фон */
+  --bg:#483B50;
+
+  /* анимация */
+  --sheet-open-dur:420ms;
+  --sheet-ease:cubic-bezier(.2,.7,0,1);
+
+  /* шрифты/база */
+  --gap:16px;
+
+  /* ОБЛОЖКА (не зависит от высоты экрана) */
+  --cover-size:clamp(282px, 32vw, 380px);
+  --cover-radius:clamp(8px, 1.6vw, 11px);
+  --cover-shadow-x:0px;
+  --cover-shadow-y:0px;
+  --cover-shadow-blur:22px;
+  --cover-shadow-spread:0px;
+  --cover-shadow-color:rgba(0,0,0,.42);
+  --cover-x:0px;    /* сдвиг обложки от центра по X */
+  --cover-y:-170px;    /* сдвиг обложки от центра по Y */
+
+  /* НАЗВАНИЕ */
+  --title-size:clamp(18px, 2.4vw, 28px);
+  --title-width: clamp(310px, 70vw, 520px);
+  --title-color:#E6E1EA;    
+  --title-weight: 780;
+  --title-y:130px;
+  --title-x:0px;
+
+  /* ГЛАВА */
+  --part-size:clamp(14px, 1.8vw, 18px);
+  --part-weight:600;
+  --part-color:#C7C1CB;
+  --part-x:0px;
+  --part-y:303px;
+
+  /* КОНТРОЛЫ (контейнер кнопок) */
+  --controls-gap:clamp(26px, 3vw, 48px);
+  --controls-x:0px;
+  --controls-y:235px;
+
+  /* размеры кнопок */
+  --size-prev:30px;
+  --size-back15:36px;
+  --size-play:clamp(56px, 7vw, 72px);
+  --size-fwd30:36px;
+  --size-next:30px;
+
+  /* ПРОГРЕСС */
+  --progress-width:clamp(320px, 60vw, 520px);
+  --progress-height:5px;
+  --progress-knob:12px;
+  --progress-track:rgba(255,255,255,.18);
+  --progress-fill:#FFFFFF;
+  --progress-y:355px;
+
+  /*прокрутка плеера*/
+  --marquee-speed: 16;   /* пикселей в секунду */
+  --marquee-min: 8s; 
+  --marquee-max: 50s;   
+}
+
+/* Шрифты как в старой версии */
+:host, .sheet, .sheet *{
+  font-family:"Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing:border-box;
+  -webkit-user-select:none; user-select:none;
+  -webkit-touch-callout:none;
+}
+
+/* =========================
+   Нулевое положение — центр экрана
+   Каждый блок абсолютный, сдвигается от центра по X/Y
+   ========================= */
+
+/* 1) Обложка */
+.cover{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, -50%) translate(var(--cover-x), var(--cover-y));
+  width:var(--cover-size); height:var(--cover-size);
+  border-radius:var(--cover-radius);
+  overflow:hidden;
+  box-shadow:var(--cover-shadow-x) var(--cover-shadow-y) var(--cover-shadow-blur)
+             var(--cover-shadow-spread) var(--cover-shadow-color);
+  display:grid; place-items:center;
+  z-index:10;
+}
+.cover .img{
+  width:100%; height:100%;
+  background:#444 center/cover no-repeat; /* картинка прилетает из JS как background-image */
+  border-radius:inherit;
+}
+
+/* 2) Название */
+.title{
+  /* центрирование от центра экрана с твоими смещениями */
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, -50%) translate(var(--title-x), var(--title-y));
+
+  /* управляемая ширина — чтобы корректно определять переполнение */
+  width: var(--title-width, clamp(280px, 70vw, 520px));
+
+  /* базовая типографика (НЕ слетит) */
+  font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: var(--title-weight, 780);
+  font-size: var(--title-size, clamp(18px, 2.4vw, 28px));
+  color: var(--title-color, #E6E1EA);
+
+  /* поведение строки */
+  text-align:center;
+  white-space:nowrap;
+  overflow:hidden;
+  height:1.25em; 
+  line-height:1.2;
+
+  /* по умолчанию маску НЕ включаем (только при переполнении) */
+  -webkit-mask-image: none;
+          mask-image: none;
+
+  z-index:20;
+}
+
+/* маска только когда реально не влезает — класс ставит JS */
+.title.is-clip{
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 9%, #000 91%, transparent 100%);
+}
+
+/* лента текста + клон (JS добавляет) */
+.title .track{
+  display:inline-flex;
+  gap:24px;                 /* не меняй, это же значение читает JS */
+  will-change: transform;
+  font: inherit;
+  color: inherit;
+}
+
+/* включение прокрутки (JS добавляет класс .marquee) */
+.title.marquee .track{
+  animation: marquee-loop var(--dur, 14s) linear infinite;
+}
+
+/* прокрутка на ширину первой копии + gap */
+@keyframes marquee-loop{
+  from{ transform: translateX(0); }
+  to  { transform: translateX(calc(-1 * var(--dist, 0px))); }
+}
+
+/* 3) Контролы */
+.controls{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, -50%) translate(var(--controls-x), var(--controls-y));
+  display:flex; align-items:center; justify-content:center;
+  gap:var(--controls-gap);
+  z-index:30;
+}
+.controls button{
+  all:unset; display:grid; place-items:center; cursor:pointer; border-radius:999px;
+}
+#prev  img{ width:var(--size-prev);   height:var(--size-prev); }
+#back15 img{ width:var(--size-back15); height:var(--size-back15); }
+#pp    img{ width:var(--size-play);   height:var(--size-play); }
+#fwd30 img{ width:var(--size-fwd30);  height:var(--size-fwd30); }
+#next  img{ width:var(--size-next);   height:var(--size-next); }
+.controls img{ display:block; }
+
+/* 4) Глава */
+.part{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, -50%) translate(var(--part-x), var(--part-y));
+  text-align:center;
+  color:var(--part-color);
+  font-weight:var(--part-weight);
+  font-size:var(--part-size);
+  line-height:1.2;
+  z-index:25;
+}
+
+/* 5) Прогресс */
+.progress-wrap{
+  position:absolute; left:50%; top:50%;
+  transform:translate(-50%, -50%) translate(var(--progress-x, 0px), var(--progress-y, 0px));
+  width:var(--progress-width);
+  z-index:35;
+}
+.bar{
+  position:relative;
+  height:var(--progress-height);
+  background:var(--progress-track);
+  border-radius:999px;
+  cursor:pointer;
+  touch-action:none;
+}
+.fill{
+  height:100%; width:0%;
+  background:var(--progress-fill);
+  border-radius:inherit;
+}
+.knob{
+  position:absolute; top:50%; left:0%;
+  width:var(--progress-knob); height:var(--progress-knob);
+  border-radius:50%;
+  background:var(--progress-fill);
+  transform:translate(-50%, -50%);
+  pointer-events:none;
+}
+.time{
+  display:flex; justify-content:space-between;
+  color:#9f9f9f;
+  font-weight:550; font-size:12px;
+  margin-top:6px;
+}
+
+.controls img {
+  display: block;
+  transform-origin: 50% 50%;
+}
+
+.controls img.bump {
+  animation: pp-bump 140ms ease-out;
+}
+
+@keyframes pp-bump {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(var(--pp-bump-scale, 1.07)); }
+  100% { transform: scale(1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .title.marquee .track { animation: none; }
+  .controls img.bump { animation: none; }
+}
+
+

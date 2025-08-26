@@ -1,0 +1,121 @@
+:host {
+  --color-bg: #2e2533;
+  --color-fg: #f5f5f5;
+  --color-sub: #b5b5b5;
+  --color-accent: #ffffff;
+  --gap: 16px;
+  --radius: 14px;
+  --cover-size: min(70vw, 360px);
+  --btn-size: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: end center;
+  background: rgba(0,0,0,.4);
+  z-index: 9999;
+}
+
+.sheet {
+  width: 100%;
+  max-height: 100%;
+  background: var(--color-bg);
+  border-radius: 24px 24px 0 0;
+  padding: var(--gap);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.cover {
+  width: var(--cover-size);
+  height: var(--cover-size);
+  border-radius: var(--radius);
+  background: #444 center/cover no-repeat;
+  box-shadow: 0 8px 20px rgba(0,0,0,.4);
+}
+
+.title {
+  font: 700 20px/1.2 system-ui, sans-serif;
+  color: var(--color-fg);
+  text-align: center;
+}
+
+.part {
+  font: 600 15px/1.2 system-ui, sans-serif;
+  color: var(--color-sub);
+  text-align: center;
+}
+
+.author {
+  font: 500 14px system-ui, sans-serif;
+  color: var(--color-sub);
+  text-align: center;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--gap) * 1.2);
+}
+
+.controls button {
+  all: unset;
+  width: var(--btn-size);
+  height: var(--btn-size);
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.controls img {
+  width: 60%;
+  height: 60%;
+}
+
+.progress-wrap {
+  width: 100%;
+  max-width: 480px;
+}
+
+.bar {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.2);
+  position: relative;
+  cursor: pointer;
+}
+
+.fill {
+  height: 100%;
+  background: var(--color-accent);
+  width: 0%;
+  border-radius: inherit;
+}
+
+.knob {
+  position: absolute;
+  top: 50%;
+  left: 0%;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--color-accent);
+  transform: translate(-50%, -50%);
+}
+
+.time {
+  display: flex;
+  justify-content: space-between;
+  color: var(--color-sub);
+  font: 600 12px system-ui, sans-serif;
+  margin-top: 4px;
+}
