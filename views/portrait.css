@@ -10,21 +10,40 @@
 .overlay.open{ pointer-events:auto; }
 
 .sheet{
-  width:100vw;
-  height:100vh; height:100dvh;
-  background:var(--bg);
-  box-shadow:0 1px 60px rgba(0,0,0,.6), 0 1px 0 rgba(255,255,255,.04) inset;
-  transform:translateY(100%);
-  transition:transform var(--sheet-open-dur) var(--sheet-ease);
-  will-change:transform;
-  position:relative; /* якорь для абсолютного центрирования */
+  position: relative;
+
+  /* ширина/высота экрана: вместо 100vh используем визуальную высоту */
+  width: 100vw;
+  height: calc(var(--vh, 1vh) * 100);
+
+  /* чтобы ничего не уезжало под «чёлку»/нижнюю панель */
+  padding:
+    calc(clamp(12px, 3vh, 40px) + var(--safe-top))
+    calc(clamp(12px, 3vw, 40px) + var(--safe-right))
+    calc(clamp(12px, 3vh, 40px) + var(--safe-bottom))
+    calc(clamp(12px, 3vw, 40px) + var(--safe-left));
+
+  box-sizing: border-box;
+
+  background: var(--bg);
+  border-radius: var(--sheet-radius);
+  box-shadow: var(--sheet-shadow);
+
+  transform: translateY(100%);
 }
+
 .overlay.open .sheet{ transform:translateY(0%); }
 
 /* =========================
    Переменные (портрет)
    ========================= */
 :host{
+
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+
   /* фон */
   --bg:#483B50;
 
@@ -51,7 +70,7 @@
   --title-width: clamp(310px, 70vw, 520px);
   --title-color:#E6E1EA;    
   --title-weight: 780;
-  --title-y:130px;
+  --title-y:120px;
   --title-x:0px;
 
   /* ГЛАВА */
@@ -59,16 +78,16 @@
   --part-weight:600;
   --part-color:#C7C1CB;
   --part-x:0px;
-  --part-y:303px;
+  --part-y:290px;
 
   /* КОНТРОЛЫ (контейнер кнопок) */
   --controls-gap:clamp(26px, 3vw, 48px);
   --controls-x:0px;
-  --controls-y:235px;
+  --controls-y:225px;
 
   /* размеры кнопок */
   --size-prev:30px;
-  --size-back15:36px;
+  --size-back15:36px; 
   --size-play:clamp(56px, 7vw, 72px);
   --size-fwd30:36px;
   --size-next:30px;
@@ -79,7 +98,7 @@
   --progress-knob:12px;
   --progress-track:rgba(255,255,255,.18);
   --progress-fill:#FFFFFF;
-  --progress-y:355px;
+  --progress-y:340px;
 
   /*прокрутка плеера*/
   --marquee-speed: 16;   /* пикселей в секунду */
@@ -256,6 +275,15 @@
 @media (prefers-reduced-motion: reduce) {
   .title.marquee .track { animation: none; }
   .controls img.bump { animation: none; }
+}
+
+:host .sheet .progress-wrap{
+  width: var(--progress-width) !important;
+  min-width: var(--progress-width) !important;
+  max-width: var(--progress-width) !important;
+}
+:host .sheet .progress-wrap .bar{
+  width: 100% !important;
 }
 
 
