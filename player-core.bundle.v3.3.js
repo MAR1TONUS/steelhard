@@ -245,56 +245,62 @@
     }
 
     // ----------- Internals -----------
-    _open(opener, closing = false) {
-      const $ = this.$;
+_open(opener, closing = false) {
+  const $ = this.$;
 
-      if (this._closeTimer) { try { clearTimeout(this._closeTimer); } catch(e){} this._closeTimer = null; }
-      if (this._onCloseEnd && $.sheet) {
-        try { $.sheet.removeEventListener('transitionend', this._onCloseEnd); } catch(e){}
-        this._onCloseEnd = null;
+  if (this._closeTimer) { try { clearTimeout(this._closeTimer); } catch(e){} this._closeTimer = null; }
+  if (this._onCloseEnd && $.sheet) {
+    try { $.sheet.removeEventListener('transitionend', this._onCloseEnd); } catch(e){}
+    this._onCloseEnd = null;
+  }
+
+  if (closing) {
+    this._state.isOpen = false;
+    $.overlay.classList.remove('open');
+    if ($.sheet) {
+      const cs = getComputedStyle($.sheet);
+      if (!/transform/.test(cs.transition)) {
+        $.sheet.style.transition = `transform var(--sheet-close-dur, 220ms) ${TRANS_EASE}`;
       }
-
-      if (closing) {
-        this._state.isOpen = false;
-        $.overlay.classList.remove('open');
-        if ($.sheet) {
-          const cs = getComputedStyle($.sheet);
-          if (!/transform/.test(cs.transition)) {
-            $.sheet.style.transition = `transform var(--sheet-close-dur, 220ms) ${TRANS_EASE}`;
-          }
-          $.sheet.style.transform = 'translateY(100%)';
-        }
-        const onEnd = () => {
-          this.style.pointerEvents = 'none';
-          this.style.display = 'none';
-          if ($.sheet) try { $.sheet.removeEventListener('transitionend', onEnd); } catch(e) {}
-          if (opener && opener.focus) try { opener.focus({ preventScroll: true }); } catch(e) {}
-        };
-        this._onCloseEnd = onEnd;
-        if ($.sheet) try { $.sheet.addEventListener('transitionend', onEnd, { once: true }); } catch(e) {}
-        this._closeTimer = setTimeout(onEnd, 600);
-        return;
-      }
-
-      // OPEN
-      this._state.isOpen = true;
-      this._state.lastOpener = opener || null;
-      this.style.display = 'block';
-      this.style.pointerEvents = 'auto';
-      $.overlay.classList.add('open');
-      $.overlay.removeAttribute('aria-hidden');
-
-      if ($.sheet) {
-        $.sheet.style.transition = `transform ${TRANS_DUR} ${TRANS_EASE}`;
-        $.sheet.style.transform  = 'translateY(100%)';
-        raf2(() => { $.sheet.style.transform = 'translateY(0%)'; });
-      }
-
-      // в конце ветки OPEN (после установки классов)
-      document.documentElement.style.overflow = 'hidden';
-      document.body.style.overscrollBehavior = 'contain';
-
+      $.sheet.style.transform = 'translateY(100%)';
     }
+    const onEnd = () => {
+      this.style.pointerEvents = 'none';
+      this.style.display = 'none';
+
+      // вернуть поведение страницы после закрытия
+      document.documentElement.style.overflow = '';
+      document.body.style.overscrollBehavior = '';
+
+      if ($.sheet) try { $.sheet.removeEventListener('transitionend', onEnd); } catch(e) {}
+      if (opener && opener.focus) try { opener.focus({ preventScroll: true }); } catch(e) {}
+    };
+    this._onCloseEnd = onEnd;
+    if ($.sheet) try { $.sheet.addEventListener('transitionend', onEnd, { once: true }); } catch(e) {}
+    this._closeTimer = setTimeout(onEnd, 600);
+    return;
+  }
+
+  // OPEN
+  this._state.isOpen = true;
+  this._state.lastOpener = opener || null;
+
+  this.style.display = 'block';
+  this.style.pointerEvents = 'auto';
+  $.overlay.classList.add('open');
+  $.overlay.removeAttribute('aria-hidden');
+
+  // заблокировать прокрутку страницы под шторкой
+  document.documentElement.style.overflow = 'hidden';
+  document.body.style.overscrollBehavior = 'contain';
+
+  if ($.sheet) {
+    $.sheet.style.transition = `transform ${TRANS_DUR} ${TRANS_EASE}`;
+    $.sheet.style.transform  = 'translateY(100%)';
+    raf2(() => { $.sheet.style.transform = 'translateY(0%)'; });
+  }
+}
+
 
     // ----- Controls binding -----
     _bindControls() {
