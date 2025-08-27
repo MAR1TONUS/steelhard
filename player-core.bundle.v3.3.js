@@ -489,47 +489,50 @@ _ensureStack() {
 
 _fitToViewport(){
   const $ = this.$;
+  const sheet = $.sheet;
+  if (!sheet) return;
 
-  // 0) Сбросить lift, чтобы мерить "чистую" геометрию
-  $.sheet.style.setProperty('--lift', '0px');
+  // 0) базовые сбросы перед измерениями
+  sheet.style.setProperty('--lift', '0px');        // портретный лифт
+  sheet.style.setProperty('--lift-ctrl', '0px');   // лифт контролов в ландскейпе
 
   // 1) размеры шторки и окна
-  const w = $.sheet.clientWidth,  h = $.sheet.clientHeight;
-  const sw = window.innerWidth,   sh = window.innerHeight;
+  const w = sheet.clientWidth,  h = sheet.clientHeight;
+  const sw = window.innerWidth, sh = window.innerHeight;
+  const isPortrait  = sh >= sw;
 
   // 2) масштаб fit
   let fit = (sw / sh > w / h) ? (sh / h) : (sw / w);
   if (fit > 1.2) fit = 1.2;
   if (fit < 0.7) fit = 0.7;
-
-  $.sheet.style.setProperty('--fit', fit);
+  sheet.style.setProperty('--fit', fit);
 
   // 3) reflow, чтобы scale(var(--fit)) применился перед измерениями
-  void $.sheet.offsetWidth;
+  void sheet.offsetWidth;
 
-  // 4) вычисляем lift
-  const sheet = $.sheet;
-  let liftPx = 0;
-
-  if (sheet) {
-    const cs        = getComputedStyle(sheet);
-    const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90;
-    const minGapCSS = parseFloat(cs.getPropertyValue('--lift-min-gap')) || 40;
-
-    // Перекрытие панелью: берём наибольшую оценку
+  // вспомогательные метрики перекрытия нижней панели браузера
+  const getOcclusion = () => {
     const occVV = (window.visualViewport && typeof visualViewport.height === 'number')
       ? Math.max(0, window.innerHeight - visualViewport.height)
       : 0;
     const occScreen = (typeof screen === 'object' && screen && typeof screen.height === 'number')
       ? Math.max(0, screen.height - window.innerHeight)
       : 0;
-    const occlusion = Math.max(occVV, occScreen);
+    return Math.max(occVV, occScreen);
+  };
 
-    const minGap = minGapCSS + occlusion;
+  const cs = getComputedStyle(sheet);
+  const sheetRect = sheet.getBoundingClientRect();
 
-    const sheetRect = sheet.getBoundingClientRect();
-    const sr   = this.shadowRoot;
-    const els  = [
+  // --- A) ПОРТРЕТ: общий лифт для всего нижнего блока ---
+  if (isPortrait) {
+    let liftPx = 0;
+    const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90;
+    const minGapCSS = parseFloat(cs.getPropertyValue('--lift-min-gap')) || 40;
+    const minGap    = minGapCSS + getOcclusion();
+
+    const sr  = this.shadowRoot;
+    const els = [
       sr.querySelector('.progress-wrap'),
       sr.querySelector('.controls'),
       sr.querySelector('.part'),
@@ -543,16 +546,37 @@ _fitToViewport(){
     }
 
     if (isFinite(bottomMax)) {
-      const free = sheetRect.bottom - bottomMax; // >0 — есть место
+      const free = sheetRect.bottom - bottomMax; // >0 — место есть
       if (free < minGap) {
         liftPx = Math.min(liftMax, Math.ceil(minGap - free));
       }
     }
+    sheet.style.setProperty('--lift', liftPx + 'px');
+    sheet.style.setProperty('--lift-ctrl', '0px'); // на всякий случай
+    return;
   }
 
-  // 5) записать итог
-  sheet.style.setProperty('--lift', liftPx + 'px');
+  // --- B) ЛАНДСКЕЙП: поднимаем только .controls ---
+  {
+    const ctrl = this.shadowRoot.querySelector('.controls');
+    if (!ctrl) return;
+
+    const liftMax   = parseFloat(cs.getPropertyValue('--lift-ctrl-max'))     || 96;
+    const minGapCSS = parseFloat(cs.getPropertyValue('--lift-ctrl-min-gap')) || 56;
+    const minGap    = minGapCSS + getOcclusion();
+
+    const ctrlRect = ctrl.getBoundingClientRect();
+    const free = sheetRect.bottom - ctrlRect.bottom;
+
+    let liftCtrl = 0;
+    if (free < minGap) {
+      liftCtrl = Math.min(liftMax, Math.ceil(minGap - free));
+    }
+    sheet.style.setProperty('--lift-ctrl', liftCtrl + 'px');
+    sheet.style.setProperty('--lift', '0px'); // в ландскейпе общий лифт не используем
+  }
 }
+
 
 
     // ===== Бамп 2px на иконке (клик-пульс) =====
