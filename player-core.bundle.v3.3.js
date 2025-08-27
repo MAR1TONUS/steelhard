@@ -28,8 +28,16 @@
   // ---------- Small utilities ----------
   const raf2 = (fn) => requestAnimationFrame(() => requestAnimationFrame(fn));
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
-  const TRANS_DUR = 'var(--sheet-open-dur)';
-  const TRANS_EASE = 'var(--sheet-ease, cubic-bezier(.2,.7,0,1))';
+  const TRANS_DUR = 'var(--sheet-open-dur, 420ms)';
+  const TRANS_EASE = 'var(--sheet-ease, cubic-bezier(.2,.9,.2,1))';
+  // 🔍 Отладка: покажем, что реально видит браузер
+function logTransitionVars(sheetEl) {
+  const cs = getComputedStyle(sheetEl);
+  console.log(
+    '[AudioSheet] open-dur =', cs.getPropertyValue('--sheet-open-dur') || '(нет)',
+    '| ease =', cs.getPropertyValue('--sheet-ease') || '(нет)'
+  );
+}
 
   class XAudioSheet extends HTMLElement {
     constructor() {
@@ -142,55 +150,60 @@
       } catch (e) {}
     }
 
-    connectedCallback() {
-      document.addEventListener('keydown', this._onKey);
-      this.style.display = 'none';
-      this.style.pointerEvents = 'none';
-      this._onResize = () => this._applyLayoutMode();
-      window.addEventListener('resize', this._onResize);
+connectedCallback() {
+  document.addEventListener('keydown', this._onKey);
+  this.style.display = 'none';
+  this.style.pointerEvents = 'none';
+
+  // пересчёт layout + подгонка
+  this._onResize = () => {
+    this._applyLayoutMode && this._applyLayoutMode();
+    this._fitToViewport(); // ← добавлено
+  };
+  window.addEventListener('resize', this._onResize);
+}
+
+
+open(meta = {}) {
+  const $ = this.$;
+
+  // НОРМАЛИЗАЦИЯ ДАННЫХ
+  const title   = meta.title || '';
+  const part    = (meta.partTitle ?? meta.partLabel ?? meta.part ?? '').toString();
+  const chapter = (meta.chapter ?? '').toString();           // ⟵ номер главы вместо автора
+  const coverURL = meta.cover || this._opts.cover || '';
+
+  // ЗАПИСЬ В DOM
+  try {
+    const trackEl = this.shadowRoot.querySelector('.title .track');
+    if (trackEl) {
+      trackEl.textContent = title;
+      trackEl.setAttribute('data-text', trackEl.textContent); // для marquee
     }
-    disconnectedCallback() {
-      document.removeEventListener('keydown', this._onKey);
-      window.removeEventListener('resize', this._onResize);
+
+    const partEl = this.shadowRoot.querySelector('.part');
+    if (partEl) partEl.textContent = part;
+
+    // бывший .author — теперь отображает НОМЕР ГЛАВЫ, если он есть
+    const chapEl = this.shadowRoot.querySelector('.author');
+    if (chapEl) chapEl.textContent = " ";
+
+    this.$.cover.style.backgroundImage = coverURL ? `url(${encodeURI(coverURL)})` : '';
+
+    if (meta.src) {
+      if (this.$.audio.src !== meta.src) this.$.audio.src = meta.src;
+      try { this.$.audio.load(); } catch(e) {}
     }
+  } catch(e) {}
 
-    open(meta = {}) {
-      const $ = this.$;
+  // после установки текста — настроить бегущую строку
+  this._setupMarquee();
 
-      // нормализуем поля
-      let title = meta.title || '';
-      let part  = meta.partTitle || '';
-      if (!title && part) { title = part; part = meta.part || meta.partLabel || ''; }
+  // открыть шторку
+  this._open(meta.opener || null, false);
+}
 
-      try {
-        // название
-        const trackEl = this.shadowRoot.querySelector('.title .track');
-        if (trackEl) {
-          trackEl.textContent = title || '';
-          trackEl.setAttribute('data-text', trackEl.textContent);
-        }
-        // глава
-        const partEl = this.shadowRoot.querySelector('.part');
-        if (partEl) partEl.textContent = part || '';
-        // автор
-        const authEl = this.shadowRoot.querySelector('.author');
-        if (authEl) authEl.textContent = meta.author || '';
-        // обложка
-        const coverURL = meta.cover || this._opts.cover || '';
-        this.$.cover.style.backgroundImage = coverURL ? `url(${encodeURI(coverURL)})` : '';
-        // аудио
-        if (meta.src) {
-          if (this.$.audio.src !== meta.src) this.$.audio.src = meta.src;
-          try { this.$.audio.load(); } catch(e) {}
-        }
-      } catch(e) {}
 
-      // после установки текста — настроить бегущую строку
-      this._setupMarquee();
-
-      // открыть шторку
-      this._open(meta.opener || null, false);
-    }
 
     close() { this._open(null, true); }
 
@@ -281,25 +294,43 @@ _open(opener, closing = false) {
     return;
   }
 
-  // OPEN
-  this._state.isOpen = true;
-  this._state.lastOpener = opener || null;
+// OPEN
+this._state.isOpen = true;
+this._state.lastOpener = opener || null;
 
-  this.style.display = 'block';
-  this.style.pointerEvents = 'auto';
-  $.overlay.classList.add('open');
-  $.overlay.removeAttribute('aria-hidden');
-
-  // заблокировать прокрутку страницы под шторкой
-  document.documentElement.style.overflow = 'hidden';
-  document.body.style.overscrollBehavior = 'contain';
-
-  if ($.sheet) {
-    $.sheet.style.transition = `transform ${TRANS_DUR} ${TRANS_EASE}`;
-    $.sheet.style.transform  = 'translateY(100%)';
-    raf2(() => { $.sheet.style.transform = 'translateY(0%)'; });
-  }
+// 1) Готовим стартовое состояние ДО показа
+if ($.sheet) {
+  $.sheet.style.transition = 'none';                 // отключаем переход на старт
+  $.sheet.style.transform  = 'translateY(100%)';     // уходим за нижний край
 }
+
+// 2) Теперь показываем компонент
+this.style.display = 'block';
+this.style.pointerEvents = 'auto';
+$.overlay.classList.add('open');
+$.overlay.removeAttribute('aria-hidden');
+
+// Блокируем скролл и подгоняем размеры
+document.documentElement.style.overflow = 'hidden';
+document.body.style.overscrollBehavior = 'contain';
+this._ensureStack();
+this._fitToViewport();
+
+// 3) В следующем кадре включаем переход и едем к 0%
+if ($.sheet) {
+  requestAnimationFrame(() => {
+    // принудительный reflow, чтобы браузер «зафиксировал» стартовое состояние
+    void $.sheet.offsetWidth;
+
+    $.sheet.style.transition = `transform ${TRANS_DUR} ${TRANS_EASE}`;
+    $.sheet.style.transform  = 'translateY(0%)';
+
+    // дополнительная подгонка после старта
+    this._fitToViewport();
+  });
+}
+}
+
 
 
     // ----- Controls binding -----
@@ -394,6 +425,82 @@ _open(opener, closing = false) {
         else measure();
       });
     }
+
+_ensureStack() {
+  const $ = this.$;
+  if (!$.sheet || $.stack) return;
+
+  const stack = document.createElement('div');
+  stack.className = 'stack';
+
+  const cover    = this.shadowRoot.querySelector('.cover');
+  const meta     = this.shadowRoot.querySelector('.meta');
+  const progress = this.shadowRoot.querySelector('.progress-wrap');
+  const controls = this.shadowRoot.querySelector('.controls');
+
+  [cover, meta, progress, controls].forEach(n => {
+    if (n && n.parentNode) stack.appendChild(n);
+  });
+
+  $.sheet.appendChild(stack);
+  $.stack = stack;
+}
+
+_fitToViewport(){
+  const $ = this.$;
+
+  // размеры шторки и вьюпорта
+  const w = $.sheet.clientWidth;
+  const h = $.sheet.clientHeight;
+
+  const sw = window.innerWidth;
+  const sh = window.innerHeight;
+
+  // соотношение сторон
+  const aspect = sw / sh;
+
+  // рассчёт масштаба fit
+  let fit;
+  if (aspect > w / h) {
+    fit = sh / h;
+  } else {
+    fit = sw / w;
+  }
+
+  // ограничиваем fit
+  if (fit > 1.2) fit = 1.2;
+  if (fit < 0.7) fit = 0.7;
+
+  // пишем в CSS
+  $.sheet.style.setProperty('--fit', fit);
+
+  // === НОВОЕ: вычисляем --lift ===
+  const sheet = $.sheet;
+  const stack = this.shadowRoot.querySelector('.stack');
+  let liftPx = 0;
+
+  if (sheet && stack) {
+    // Геометрия после применения scale(fit)
+    const sheetRect = sheet.getBoundingClientRect();
+    const stackRect = stack.getBoundingClientRect();
+
+    const overflow = stackRect.bottom - sheetRect.bottom;
+
+    // максимум подъёма задаём в CSS (portrait.css: --lift-max: 90px;)
+    const cssLiftMax = parseFloat(getComputedStyle(sheet).getPropertyValue('--lift-max')) || 90;
+
+    if (overflow > 0) {
+      // поднимаем столько, чтобы низ влез + небольшой запас
+      liftPx = Math.min(cssLiftMax, Math.ceil(overflow + 12));
+    } else {
+      liftPx = 0;
+    }
+  }
+
+  // записываем lift в CSS
+  sheet.style.setProperty('--lift', liftPx + 'px');
+}
+
 
     // ===== Бамп 2px на иконке (клик-пульс) =====
     _bump(imgEl) {
