@@ -449,57 +449,58 @@ _ensureStack() {
 _fitToViewport(){
   const $ = this.$;
 
-  // размеры шторки и вьюпорта
-  const w = $.sheet.clientWidth;
-  const h = $.sheet.clientHeight;
+  // 1) масштаб под окно
+  const w = $.sheet.clientWidth,  h = $.sheet.clientHeight;
+  const sw = window.innerWidth,   sh = window.innerHeight;
 
-  const sw = window.innerWidth;
-  const sh = window.innerHeight;
-
-  // соотношение сторон
-  const aspect = sw / sh;
-
-  // рассчёт масштаба fit
-  let fit;
-  if (aspect > w / h) {
-    fit = sh / h;
-  } else {
-    fit = sw / w;
-  }
-
-  // ограничиваем fit
+  let fit = (sw / sh > w / h) ? (sh / h) : (sw / w);
   if (fit > 1.2) fit = 1.2;
   if (fit < 0.7) fit = 0.7;
 
-  // пишем в CSS
   $.sheet.style.setProperty('--fit', fit);
 
-  // === НОВОЕ: вычисляем --lift ===
+  // 2) reflow, чтобы scale(var(--fit)) учёлся в измерениях
+  void $.sheet.offsetWidth;
+
+  // 3) вычисляем подъём нижнего блока
   const sheet = $.sheet;
-  const stack = this.shadowRoot.querySelector('.stack');
   let liftPx = 0;
 
-  if (sheet && stack) {
-    // Геометрия после применения scale(fit)
+  if (sheet) {
+    const cs        = getComputedStyle(sheet);
+    const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90; // px
+    const minGap    = parseFloat(cs.getPropertyValue('--lift-min-gap'))  || 40; // px
+
     const sheetRect = sheet.getBoundingClientRect();
-    const stackRect = stack.getBoundingClientRect();
 
-    const overflow = stackRect.bottom - sheetRect.bottom;
+    // Берём реальные слои, которые образуют "низ"
+    const sr   = this.shadowRoot;
+    const els  = [
+      sr.querySelector('.progress-wrap'),
+      sr.querySelector('.controls'),
+      sr.querySelector('.part'),
+      sr.querySelector('.title')
+    ].filter(Boolean);
 
-    // максимум подъёма задаём в CSS (portrait.css: --lift-max: 90px;)
-    const cssLiftMax = parseFloat(getComputedStyle(sheet).getPropertyValue('--lift-max')) || 90;
+    // максимум из их .bottom
+    let bottomMax = -Infinity;
+    for (const el of els) {
+      const r = el.getBoundingClientRect();
+      if (r.bottom > bottomMax) bottomMax = r.bottom;
+    }
 
-    if (overflow > 0) {
-      // поднимаем столько, чтобы низ влез + небольшой запас
-      liftPx = Math.min(cssLiftMax, Math.ceil(overflow + 12));
-    } else {
-      liftPx = 0;
+    if (isFinite(bottomMax)) {
+      const free = sheetRect.bottom - bottomMax; // положит. => место есть
+      if (free < minGap) {
+        liftPx = Math.min(liftMax, Math.ceil(minGap - free));
+      }
     }
   }
 
-  // записываем lift в CSS
   sheet.style.setProperty('--lift', liftPx + 'px');
 }
+
+
 
 
     // ===== Бамп 2px на иконке (клик-пульс) =====
