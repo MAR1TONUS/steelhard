@@ -10,26 +10,32 @@
 .overlay.open{ pointer-events:auto; }
 
 .sheet{
-  position: relative;
-
-  /* ширина/высота экрана: вместо 100vh используем визуальную высоту */
   width: 100vw;
-  height: calc(var(--vh, 1vh) * 100);
+  min-height: 100svh;   /* когда панели браузера развернуты */
+  height: 100dvh;       /* динамическая видимая высота */
+  background: var(--bg, #4F4252);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-  /* чтобы ничего не уезжало под «чёлку»/нижнюю панель */
-  padding:
-    calc(clamp(12px, 3vh, 40px) + var(--safe-top))
-    calc(clamp(12px, 3vw, 40px) + var(--safe-right))
-    calc(clamp(12px, 3vh, 40px) + var(--safe-bottom))
-    calc(clamp(12px, 3vw, 40px) + var(--safe-left));
+/* Внутренняя группа, которую можно масштабировать целиком */
+.stack{
+  position:absolute;
+  left:50%; top:50%;
+  transform-origin:50% 50%;
+  transform: translate(-50%, -50%) scale(var(--fit, 1));
+}
 
-  box-sizing: border-box;
-
-  background: var(--bg);
-  border-radius: var(--sheet-radius);
-  box-shadow: var(--sheet-shadow);
-
-  transform: translateY(100%);
+/* Все существующие блоки привяжем к .stack вместо .sheet */
+.stack > .cover,
+.stack > .meta,
+.stack > .progress-wrap,
+.stack > .controls{
+  position:absolute;
+  left:50%; top:50%;
+  transform-origin:50% 50%;
 }
 
 .overlay.open .sheet{ transform:translateY(0%); }
@@ -44,31 +50,36 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left:   env(safe-area-inset-left, 0px);
 
-  /* фон */
-  --bg:#483B50;
 
-  /* анимация */
-  --sheet-open-dur:420ms;
-  --sheet-ease:cubic-bezier(.2,.7,0,1);
+  --lift: 0px;            /* сюда пишет JS */
+  --lift-max: 90px;       /* потолок подъёма */
+  --lift-min-gap: 40px;   /* минимальный отступ снизу до края экрана */
+  --cover-lift-factor: .25;
+  
+  /* фон */
+  --bg:#5A231A;
 
   /* шрифты/база */
   --gap:16px;
+  --sheet-open-dur: 420ms;
+  --sheet-close-dur: 330ms;
+  --sheet-ease: cubic-bezier(.2,.9,.2,1);
 
   /* ОБЛОЖКА (не зависит от высоты экрана) */
-  --cover-size:clamp(282px, 32vw, 380px);
+  --cover-size:clamp(282px, 32vw, 325px);
   --cover-radius:clamp(8px, 1.6vw, 11px);
   --cover-shadow-x:0px;
   --cover-shadow-y:0px;
   --cover-shadow-blur:22px;
   --cover-shadow-spread:0px;
-  --cover-shadow-color:rgba(0,0,0,.42);
+  --cover-shadow-color:rgba(0,0,0,.5);
   --cover-x:0px;    /* сдвиг обложки от центра по X */
   --cover-y:-170px;    /* сдвиг обложки от центра по Y */
 
   /* НАЗВАНИЕ */
   --title-size:clamp(18px, 2.4vw, 28px);
   --title-width: clamp(310px, 70vw, 520px);
-  --title-color:#E6E1EA;    
+  --title-color:#ffffff;    
   --title-weight: 780;
   --title-y:120px;
   --title-x:0px;
@@ -81,22 +92,22 @@
   --part-y:290px;
 
   /* КОНТРОЛЫ (контейнер кнопок) */
-  --controls-gap:clamp(26px, 3vw, 48px);
+  --controls-gap:clamp(30px, 3vw, 48px);
   --controls-x:0px;
   --controls-y:225px;
 
   /* размеры кнопок */
-  --size-prev:30px;
-  --size-back15:36px; 
-  --size-play:clamp(56px, 7vw, 72px);
-  --size-fwd30:36px;
-  --size-next:30px;
+  --size-prev:25px;
+  --size-back15:33px; 
+  --size-play:clamp(56px, 7vw, 60px);
+  --size-fwd30:33px;
+  --size-next:25px;
 
   /* ПРОГРЕСС */
   --progress-width:clamp(320px, 60vw, 520px);
   --progress-height:5px;
   --progress-knob:12px;
-  --progress-track:rgba(255,255,255,.18);
+  --progress-track:#ffffff40;
   --progress-fill:#FFFFFF;
   --progress-y:340px;
 
@@ -121,8 +132,9 @@
 
 /* 1) Обложка */
 .cover{
+  transform: translate(-50%, -50%)
+             translate(var(--cover-x), calc(var(--cover-y) - var(--lift) * var(--cover-lift-factor)));
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, -50%) translate(var(--cover-x), var(--cover-y));
   width:var(--cover-size); height:var(--cover-size);
   border-radius:var(--cover-radius);
   overflow:hidden;
@@ -139,27 +151,27 @@
 
 /* 2) Название */
 .title{
-  /* центрирование от центра экрана с твоими смещениями */
+  transform: translate(-50%, -50%)
+             translate(var(--title-x), calc(var(--title-y) - var(--lift)));
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, -50%) translate(var(--title-x), var(--title-y));
 
-  /* управляемая ширина — чтобы корректно определять переполнение */
   width: var(--title-width, clamp(280px, 70vw, 520px));
 
-  /* базовая типографика (НЕ слетит) */
   font-family: "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   font-weight: var(--title-weight, 780);
   font-size: var(--title-size, clamp(18px, 2.4vw, 28px));
   color: var(--title-color, #E6E1EA);
 
-  /* поведение строки */
   text-align:center;
   white-space:nowrap;
   overflow:hidden;
   height:1.25em; 
   line-height:1.2;
 
-  /* по умолчанию маску НЕ включаем (только при переполнении) */
+  margin: 0;
+  padding: 0;
+  text-align: center;
+
   -webkit-mask-image: none;
           mask-image: none;
 
@@ -194,8 +206,9 @@
 
 /* 3) Контролы */
 .controls{
+  transform: translate(-50%, -50%)
+             translate(var(--controls-x), calc(var(--controls-y) - var(--lift)));
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, -50%) translate(var(--controls-x), var(--controls-y));
   display:flex; align-items:center; justify-content:center;
   gap:var(--controls-gap);
   z-index:30;
@@ -212,20 +225,24 @@
 
 /* 4) Глава */
 .part{
+  transform: translate(-50%, -50%)
+             translate(var(--part-x), calc(var(--part-y) - var(--lift)));
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, -50%) translate(var(--part-x), var(--part-y));
   text-align:center;
   color:var(--part-color);
   font-weight:var(--part-weight);
   font-size:var(--part-size);
   line-height:1.2;
   z-index:25;
+  white-space: nowrap;
+  word-break: keep-all;
 }
 
 /* 5) Прогресс */
 .progress-wrap{
+  transform: translate(-50%, -50%)
+             translate(var(--progress-x, 0px), calc(var(--progress-y, 0px) - var(--lift)));
   position:absolute; left:50%; top:50%;
-  transform:translate(-50%, -50%) translate(var(--progress-x, 0px), var(--progress-y, 0px));
   width:var(--progress-width);
   z-index:35;
 }
@@ -253,7 +270,8 @@
 .time{
   display:flex; justify-content:space-between;
   color:#9f9f9f;
-  font-weight:550; font-size:12px;
+  font-weight:550; 
+  font-size:13px;
   margin-top:6px;
 }
 
