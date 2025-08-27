@@ -68,8 +68,8 @@
 
 
   --lift: 0px;            
-  --lift-max: 45px;       
-  --lift-min-gap: 20px;   
+  --lift-max: 20px;       
+  --lift-min-gap: 10px;   
   --cover-lift-factor: .25;
 
   /* фон */
