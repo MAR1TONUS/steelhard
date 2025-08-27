@@ -1,0 +1,220 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap");
+
+:host{
+  all: initial;
+  contain: content;
+  position: fixed; inset: 0;
+  z-index: 999999;
+  display: block;
+  font-family: "Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+
+  --sky-angle: 145deg;
+
+  /* запрет выделения/долгих тапов */
+  -webkit-user-select: none; -moz-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+
+  /* ---------- АНИМАЦИИ (тюнинг) ---------- */
+  --fade-in-dur:   .44s;
+  --fade-out-dur:  .36s;
+  --fade-ease:     cubic-bezier(.2,.9,.2,1);
+  --sheet-out-dur: .48s;
+  --sheet-out-ease:cubic-bezier(.2,.9,.2,1);
+
+  /* ---------- КНОПКА ---------- */
+  --btn-bg:           #1c1c1c;  
+  --btn-bg-active:    #505050; 
+  --btn-scale-active: 1.08;   
+  --btn-width:        120px;  
+  --btn-height:       44px;    
+  --btn-pad-x:        24px;  
+/* КАРТОЧКА */
+  --card-width:        880px;
+  --card-height:       533px;
+  --card-bg:           rgba(15, 17, 24, .58);
+  --card-border:       rgba(255,255,255,.08);
+  --card-radius:       15px;
+  --card-pad-x:        clamp(16px, 2.6vw, 28px);   /* по бокам */
+  /* новые — отдельные отступы сверху/снизу */
+  --card-pad-top:      40px;
+  --card-pad-bottom:   clamp(25px, 2.4vw, 26px);
+
+  --blur-strength:     4px;
+
+  /* ---------- ТЕКСТ 1 (плейсхолдер) ---------- */
+  --t1-size:           clamp(15px, 2.2vw, 18px);
+  --t1-weight:         600;
+  --t1-color:          #ffffff;
+
+  /* ---------- ТЕКСТ 2 (в карточке) ---------- */
+  --t2-size:           clamp(15px, 2.1vw, 17px);
+  --t2-weight:         500;
+  --t2-color:          #eaeefc;
+  --para-gap:          14px;       /* расстояние между абзацами */
+
+  /* ---------- ЗВЁЗДЫ ---------- */
+  --stars-1:           160;
+  --stars-2:            90;
+  --star-size-min:     1.0;
+  --star-size-max:     2.0;
+  --twinkle-min:       6;
+  --twinkle-max:      10;
+
+  --space:             clamp(16px, 4vw, 40px);
+}
+
+*,*::before,*::after{ box-sizing: border-box; }
+.ol{ position: fixed; inset: 0; display:grid; place-items:center; }
+
+/* ================== СЦЕНА ================== */
+.sheet{
+  position: relative;
+  width: 100vw;
+  min-height: 100svh;
+  height: 100vh;
+  height: 100dvh;
+  padding: var(--space);
+  display: grid;
+  grid-template-rows: 1fr auto auto 1fr; /* сверху/снизу пустые ряды для вертикального центрирования */
+  align-items: center;
+  row-gap: 16px;
+  overflow: hidden;
+  will-change: opacity, transform;
+}
+
+/* ---------- адаптивный ГРАДИЕНТ ---------- */
+.sky{ 
+  position:absolute; 
+  inset:0; z-index:0; 
+  background: #000000
+}
+
+/* ---------- ЗВЁЗДЫ (2 слоя) ---------- */
+.stars, .stars2{
+  position:absolute; inset:0;
+  z-index: 1;
+  pointer-events:none;
+}
+.star{
+  position: absolute;
+  width: var(--sz, 2px);      /* чуть крупнее дефолт, чтобы точно было видно */
+  height: var(--sz, 2px);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,255,255,var(--a,.9)) 45%, transparent 55%);
+  filter: drop-shadow(0 0 4px rgba(255,255,255,.35));
+  will-change: opacity;       /* подсказываем композитору */
+  animation: twinkleOpacity var(--tw, 7s) linear var(--de, 0s) infinite;
+}
+@keyframes twinkleOpacity{
+  0%   { opacity: .75; }
+  40%  { opacity: 1;   }
+  80%  { opacity: .5;  }
+  100% { opacity: .75; }
+}
+
+/* ================== КОНТЕНТ ================== */
+.ws-title{
+  z-index:1; text-align:center; font-weight:700;
+  font-size: clamp(26px, 4.5vw, 48px); line-height:1.15; margin:0;
+  text-wrap: balance;
+}
+
+/* Текст 1 (плейсхолдер) */
+.ws-text{
+  z-index:1; margin:0 auto;
+  width: min(100%, var(--card-width));
+  font-size: var(--t1-size);
+  font-weight: var(--t1-weight);
+  color: var(--t1-color);
+  text-align:center; line-height:1.6; opacity:.92;
+
+  max-height: 48vh; overflow:auto;
+  -webkit-overflow-scrolling: touch;
+  padding-inline: 2px;
+  scrollbar-width: none;
+}
+.ws-text::-webkit-scrollbar{ width:0; height:0; display:none; }
+
+/* ---------- КАРТОЧКА: фикс ширины/высоты + сетка ---------- */
+.ws-card{
+  z-index:1;
+  margin-inline: auto;
+  width: min(100%, var(--card-width));
+  height: min(72vh, var(--card-height)); /* не вылезать за экран */
+  border-radius: var(--card-radius);
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(var(--blur-strength));
+  -webkit-backdrop-filter: blur(var(--blur-strength));
+
+  /* 2 строки: верх — скроллящийся текст, низ — зона кнопки */
+  display: grid;
+  grid-template-rows: 1fr auto;
+  /* БЫЛО: padding: var(--card-pad-y) var(--card-pad-x); */
+  padding: var(--card-pad-top) var(--card-pad-x) var(--card-pad-bottom);
+  gap: clamp(12px, 2vw, 18px);
+}
+
+/* зону текста делаем скроллящейся, с ровными переносами */
+.ws-card .ws-text{
+  margin:0;
+  width: 100%;
+  max-height: 100%;
+  color: var(--t2-color);
+  font-size: var(--t2-size);
+  font-weight: var(--t2-weight);
+  text-align: justify;
+  text-justify: inter-word;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: auto;
+
+  overflow:auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.ws-card .ws-text::-webkit-scrollbar{ width:0; height:0; display:none; }
+.ws-card .ws-text p{ margin: 0 0 var(--para-gap); }
+.ws-card .ws-text p:last-child{ margin-bottom: 0; }
+
+/* зона действий (кнопка строго по центру НИЗА карточки) */
+.ws-actions{
+  display: grid; place-items: center;
+  padding-top: clamp(8px, 1.6vw, 14px);
+}
+
+/* ---------- КНОПКА ---------- */
+.ws-btn{
+  appearance: none; border: 0;
+  width: var(--btn-width);
+  height: var(--btn-height);
+  padding: 0 var(--btn-pad-x);            /* вертикальный паддинг убрали, чтобы высота была строгой */
+  border-radius: 14px;
+  background-color: var(--btn-bg);
+  color: #fff;
+
+  display: inline-grid; place-items: center; cursor: pointer;
+  font-weight: 600; font-size: clamp(14px, 1.9vw, 16px); line-height: 1;
+
+  -webkit-tap-highlight-color: transparent;
+
+  transition:
+    transform var(--fade-in-dur) var(--fade-ease),
+    background-color var(--fade-in-dur) linear,
+    opacity var(--fade-in-dur) linear;
+}   
+
+.ws-btn:active,
+.ws-btn.is-pressed{
+  background-color: var(--btn-bg-active);   /* светлее обычного */
+  transform: scale(var(--btn-scale-active)); /* немного увеличиваем */
+  transition: transform 120ms ease, background-color 120ms linear;
+}
+
+.ws-btn:disabled{ opacity: .6; cursor: default; }
+
+/* ---------- ФАЗЫ ---------- */
+.ws-hide{ display:none !important; }
+@keyframes fade-out{ to{ opacity:0; transform: translate3d(0,8px,0);} }
+@keyframes fade-in { from{ opacity:0; transform: translate3d(0,10px,0);} to{opacity:1; transform:none;} }
+.ws-phase-fade-out{ animation: fade-out var(--fade-out-dur) var(--fade-ease) forwards; }
+.ws-phase-fade-in { animation: fade-in  var(--fade-in-dur)  var(--fade-ease) forwards; }
