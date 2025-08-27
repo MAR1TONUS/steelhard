@@ -7,8 +7,11 @@
   :host{
     /* фон/анимация */
     --bg:#5A231A;
+    --lift-ctrl: 0px;             /* текущее поднятие */
+    --lift-ctrl-max: 40px;         /* максимум, до которого можно поднять */
+    --lift-ctrl-min-gap: 20px;     /* желаемый минимальный зазор снизу */
 
-    /* контейнер: видимый край при перетягивании */
+
     --sheet-radius: 0px;                 /* ты писал, что скругление не нужно */
     --sheet-shadow: 0 16px 40px rgba(0,0,0,.35);
 
@@ -209,13 +212,17 @@
 
   /* ===================== КОНТРОЛЫ (только Y) ===================== */
   .controls{
-    position: absolute; left:50%; top:50%;
-    transform: translate(-50%, -50%)
-              translate(var(--controls-x,0px), calc(var(--controls-y,0px) * var(--pack,1)));
-    display:flex; align-items:center; justify-content:center;
-    gap:var(--controls-gap);
-    line-height: 0; /* без влияния межстрочного интервала */
+  position: absolute; left:50%; top:50%;
+  transform: translate(-50%, -50%)
+    translate(
+      var(--controls-x, 0px),
+      calc( (var(--controls-y, 0px) - var(--lift-ctrl, 0px)) * var(--pack, 1) )
+    );
+  display:flex; align-items:center; justify-content:center;
+  gap:var(--controls-gap);
+  line-height:0;
   }
+
   .controls .btn{
     appearance:none; border:0; outline:0; background:transparent; padding:0; cursor:pointer;
     display:flex; align-items:center; justify-content:center; /* строгая центровка */
