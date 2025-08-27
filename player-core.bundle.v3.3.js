@@ -449,31 +449,40 @@ _ensureStack() {
 _fitToViewport(){
   const $ = this.$;
 
-  // 1) масштаб под окно
+  // 1) размеры шторки и окна
   const w = $.sheet.clientWidth,  h = $.sheet.clientHeight;
   const sw = window.innerWidth,   sh = window.innerHeight;
 
+  // 2) масштаб fit
   let fit = (sw / sh > w / h) ? (sh / h) : (sw / w);
   if (fit > 1.2) fit = 1.2;
   if (fit < 0.7) fit = 0.7;
 
   $.sheet.style.setProperty('--fit', fit);
 
-  // 2) reflow, чтобы scale(var(--fit)) учёлся в измерениях
+  // 3) reflow, чтобы scale(var(--fit)) учитывался в геометрии
   void $.sheet.offsetWidth;
 
-  // 3) вычисляем подъём нижнего блока
+  // 4) вычисляем lift
   const sheet = $.sheet;
   let liftPx = 0;
 
   if (sheet) {
     const cs        = getComputedStyle(sheet);
-    const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90; // px
-    const minGap    = parseFloat(cs.getPropertyValue('--lift-min-gap'))  || 40; // px
+    const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90;
+    const minGapCSS = parseFloat(cs.getPropertyValue('--lift-min-gap')) || 40;
+
+    // высота перекрытия системной/браузерной панели (Яндекс, Chrome и т.д.)
+    const vhOcclusion = (window.visualViewport && typeof visualViewport.height === 'number')
+      ? Math.max(0, window.innerHeight - visualViewport.height)
+      : 0;
+
+    // итоговый минимальный зазор
+    const minGap = minGapCSS + vhOcclusion;
 
     const sheetRect = sheet.getBoundingClientRect();
 
-    // Берём реальные слои, которые образуют "низ"
+    // выбираем реальные элементы, которые образуют низ
     const sr   = this.shadowRoot;
     const els  = [
       sr.querySelector('.progress-wrap'),
@@ -482,7 +491,7 @@ _fitToViewport(){
       sr.querySelector('.title')
     ].filter(Boolean);
 
-    // максимум из их .bottom
+    // находим самый нижний bottom
     let bottomMax = -Infinity;
     for (const el of els) {
       const r = el.getBoundingClientRect();
@@ -490,18 +499,16 @@ _fitToViewport(){
     }
 
     if (isFinite(bottomMax)) {
-      const free = sheetRect.bottom - bottomMax; // положит. => место есть
+      const free = sheetRect.bottom - bottomMax; // положит. = место есть
       if (free < minGap) {
         liftPx = Math.min(liftMax, Math.ceil(minGap - free));
       }
     }
   }
 
+  // 5) пишем lift в CSS
   sheet.style.setProperty('--lift', liftPx + 'px');
 }
-
-
-
 
     // ===== Бамп 2px на иконке (клик-пульс) =====
     _bump(imgEl) {
