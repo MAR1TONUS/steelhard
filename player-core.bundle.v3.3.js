@@ -150,18 +150,47 @@ function logTransitionVars(sheetEl) {
       } catch (e) {}
     }
 
-connectedCallback() {
-  document.addEventListener('keydown', this._onKey);
-  this.style.display = 'none';
-  this.style.pointerEvents = 'none';
+connectedCallback(){
+  // если уже инициализировались — выходим
+  if (this._inited) return;
+  this._inited = true;
 
-  // пересчёт layout + подгонка
-  this._onResize = () => {
-    this._applyLayoutMode && this._applyLayoutMode();
-    this._fitToViewport(); // ← добавлено
+  // …твой существующий стартовый код (создание DOM, биндинг this.$, навешивание хэндлеров кнопок)…
+
+  // ---- надёжный пересчёт верстки ----
+  const rerunFit = () => {
+    // несколько вызовов, чтобы поймать момент, когда браузер дорисовал панель/шрифты
+    this._fitToViewport();
+    requestAnimationFrame(() => this._fitToViewport());  // на следующий кадр
+    setTimeout(() => this._fitToViewport(), 0);           // после микротасков
+    setTimeout(() => this._fitToViewport(), 120);         // когда нижняя панель «уселась»
   };
-  window.addEventListener('resize', this._onResize);
+
+  // первичный запуск
+  rerunFit();
+
+  // события окна и вкладки
+  window.addEventListener('resize', rerunFit);
+  window.addEventListener('orientationchange', rerunFit);
+  window.addEventListener('load', rerunFit);
+  window.addEventListener('pageshow', rerunFit);
+
+  // панель браузера (особенно важно для Яндекс/старых WebView)
+  if (window.visualViewport) {
+    visualViewport.addEventListener('resize', rerunFit);
+    visualViewport.addEventListener('scroll', rerunFit);
+  }
+
+  // вернулись на вкладку — обновим геометрию
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) rerunFit();
+  });
+
+  // если есть анимация открытия шторки — пересчитать после неё
+  const dur = parseFloat(getComputedStyle(this.$.sheet).getPropertyValue('--sheet-open-dur')) || 420;
+  setTimeout(rerunFit, dur + 50);
 }
+
 
 
 open(meta = {}) {
@@ -449,6 +478,9 @@ _ensureStack() {
 _fitToViewport(){
   const $ = this.$;
 
+  // 0) Сбросить lift, чтобы мерить "чистую" геометрию
+  $.sheet.style.setProperty('--lift', '0px');
+
   // 1) размеры шторки и окна
   const w = $.sheet.clientWidth,  h = $.sheet.clientHeight;
   const sw = window.innerWidth,   sh = window.innerHeight;
@@ -460,7 +492,7 @@ _fitToViewport(){
 
   $.sheet.style.setProperty('--fit', fit);
 
-  // 3) reflow, чтобы scale(var(--fit)) учитывался в геометрии
+  // 3) reflow, чтобы scale(var(--fit)) применился перед измерениями
   void $.sheet.offsetWidth;
 
   // 4) вычисляем lift
@@ -472,17 +504,18 @@ _fitToViewport(){
     const liftMax   = parseFloat(cs.getPropertyValue('--lift-max'))      || 90;
     const minGapCSS = parseFloat(cs.getPropertyValue('--lift-min-gap')) || 40;
 
-    // высота перекрытия системной/браузерной панели (Яндекс, Chrome и т.д.)
-    const vhOcclusion = (window.visualViewport && typeof visualViewport.height === 'number')
+    // Перекрытие панелью: берём наибольшую оценку
+    const occVV = (window.visualViewport && typeof visualViewport.height === 'number')
       ? Math.max(0, window.innerHeight - visualViewport.height)
       : 0;
+    const occScreen = (typeof screen === 'object' && screen && typeof screen.height === 'number')
+      ? Math.max(0, screen.height - window.innerHeight)
+      : 0;
+    const occlusion = Math.max(occVV, occScreen);
 
-    // итоговый минимальный зазор
-    const minGap = minGapCSS + vhOcclusion;
+    const minGap = minGapCSS + occlusion;
 
     const sheetRect = sheet.getBoundingClientRect();
-
-    // выбираем реальные элементы, которые образуют низ
     const sr   = this.shadowRoot;
     const els  = [
       sr.querySelector('.progress-wrap'),
@@ -491,7 +524,6 @@ _fitToViewport(){
       sr.querySelector('.title')
     ].filter(Boolean);
 
-    // находим самый нижний bottom
     let bottomMax = -Infinity;
     for (const el of els) {
       const r = el.getBoundingClientRect();
@@ -499,16 +531,17 @@ _fitToViewport(){
     }
 
     if (isFinite(bottomMax)) {
-      const free = sheetRect.bottom - bottomMax; // положит. = место есть
+      const free = sheetRect.bottom - bottomMax; // >0 — есть место
       if (free < minGap) {
         liftPx = Math.min(liftMax, Math.ceil(minGap - free));
       }
     }
   }
 
-  // 5) пишем lift в CSS
+  // 5) записать итог
   sheet.style.setProperty('--lift', liftPx + 'px');
 }
+
 
     // ===== Бамп 2px на иконке (клик-пульс) =====
     _bump(imgEl) {
