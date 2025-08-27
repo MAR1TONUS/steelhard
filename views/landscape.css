@@ -6,9 +6,7 @@
 /* ===================== ПЕРЕМЕННЫЕ ===================== */
 :host{
   /* фон/анимация */
-  --bg:#483B50;
-  --sheet-open-dur:420ms;
-  --sheet-ease:cubic-bezier(.2,.7,0,1);
+  --bg:#5A231A;
 
   /* контейнер: видимый край при перетягивании */
   --sheet-radius: 0px;                 /* ты писал, что скругление не нужно */
@@ -16,6 +14,9 @@
 
   /* база */
   --gap:16px;
+  --sheet-open-dur: 420ms;
+  --sheet-close-dur: 330ms;
+  --sheet-ease: cubic-bezier(.2,.9,.2,1);
 
   /* ОБЛОЖКА */
   --cover-size:132px;
@@ -59,7 +60,7 @@
   --progress-width:clamp(750px, 60vw, 800px);
   --progress-height:5px;
   --progress-knob:12px;
-  --progress-track:rgba(255,255,255,.18);
+  --progress-track:#ffffff40;
   --progress-fill:#FFFFFF;
   --progress-y:40px;
 
@@ -90,27 +91,32 @@
   transition: opacity 200ms var(--sheet-ease);
 }
 
-/* ШТОРКА на весь экран — видно край при перетягивании */
+
 .sheet{
-  position:relative;
-  width:100vw;
-  height: calc(var(--vh, 1vh) * 100);
-  padding:
-    calc(clamp(12px, 3vh, 40px) + env(safe-area-inset-top, 0px))
-    calc(clamp(12px, 3vw, 40px) + env(safe-area-inset-right, 0px))
-    calc(clamp(12px, 3vh, 40px) + env(safe-area-inset-bottom, 0px))
-    calc(clamp(12px, 3vw, 40px) + env(safe-area-inset-left, 0px));
-  box-sizing:border-box;
-  background:var(--bg);
-  border-radius:var(--sheet-radius);
-  box-shadow:var(--sheet-shadow);
-  transform:translateY(100%);
+  width: 100vw;
+  min-height: 100svh;
+  height: 100dvh;
+  background: var(--bg, #4F4252);
 }
 
-.overlay.open .sheet{
-  transition: transform var(--sheet-open-dur) var(--sheet-ease);
-  transform: translateY(0);
+/* Внутренняя группа, которую можно масштабировать целиком */
+.stack{
+  position:absolute;
+  left:50%; top:50%;
+  transform-origin:50% 50%;
+  transform: translate(-50%, -50%) scale(var(--fit, 1));
 }
+
+/* Все существующие блоки привяжем к .stack вместо .sheet */
+.stack > .cover,
+.stack > .meta,
+.stack > .progress-wrap,
+.stack > .controls{
+  position:absolute;
+  left:50%; top:50%;
+  transform-origin:50% 50%;
+}
+
 
 /* Все блоки позиционируем из центра .sheet */
 .cover, .meta, .progress-wrap, .controls{
@@ -120,7 +126,8 @@
 
 /* ===================== ОБЛОЖКА ===================== */
 .cover{
-  transform: translate(-50%, -50%) translate(var(--cover-x), var(--cover-y));
+  transform: translate(-50%, -50%)
+             translate(var(--cover-x), calc(var(--cover-y) * var(--pack,1)));
 }
 .cover .img{
   width:var(--cover-size); height:var(--cover-size);
@@ -132,7 +139,8 @@
 
 /* ===================== ТЕКСТ (общий блок) ===================== */
 .meta{
-  transform: translate(-50%, -50%) translate(var(--meta-x), var(--meta-y));
+  transform: translate(-50%, -50%)
+             translate(var(--title-x), calc(var(--title-y) * var(--pack,1)));
   text-align: left;
 
   /* новое: управляем расстоянием между строками через gap */
@@ -170,6 +178,8 @@
 
 /* Глава (вторая строка) */
 .part{
+  transform: translate(-50%, -50%)
+             translate(var(--part-x), calc(var(--part-y) * var(--pack,1)));
   margin: 0;
   color: var(--part-color);
   font-weight: var(--part-weight);
@@ -216,7 +226,8 @@
 
 /* ===================== КОНТРОЛЫ (только Y) ===================== */
 .controls{
-  transform: translate(-50%, -50%) translateY(var(--controls-y));
+  transform: translate(-50%, -50%)
+             translate(var(--controls-x), calc(var(--controls-y) * var(--pack,1)));
   display:flex; align-items:center; justify-content:center;
   gap:var(--controls-gap);
   line-height: 0; /* без влияния межстрочного интервала */
