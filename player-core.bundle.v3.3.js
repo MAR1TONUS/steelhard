@@ -151,47 +151,59 @@ function logTransitionVars(sheetEl) {
     }
 
 connectedCallback(){
-  // если уже инициализировались — выходим
   if (this._inited) return;
   this._inited = true;
 
-  // …твой существующий стартовый код (создание DOM, биндинг this.$, навешивание хэндлеров кнопок)…
+  // как и раньше: горячие клавиши и стартовое скрытие компонента
+  document.addEventListener('keydown', this._onKey);
+  this.style.display = 'none';
+  this.style.pointerEvents = 'none';
 
-  // ---- надёжный пересчёт верстки ----
+  // Стартовое закрытое состояние шторки (на всякий случай)
+  if (this.$?.overlay) {
+    this.$.overlay.classList.remove('open');
+    this.$.overlay.classList.remove('ready'); // анимации будут включены позже
+  }
+  if (this.$?.sheet) {
+    this.$.sheet.style.transition = 'none';
+    this.$.sheet.style.transform  = 'translateY(100%)';
+    this.$.sheet.style.willChange = 'transform';
+  }
+
+  // Надёжный пересчёт лейаута
   const rerunFit = () => {
-    // несколько вызовов, чтобы поймать момент, когда браузер дорисовал панель/шрифты
     this._fitToViewport();
-    requestAnimationFrame(() => this._fitToViewport());  // на следующий кадр
-    setTimeout(() => this._fitToViewport(), 0);           // после микротасков
-    setTimeout(() => this._fitToViewport(), 120);         // когда нижняя панель «уселась»
+    requestAnimationFrame(() => this._fitToViewport());
+    setTimeout(() => this._fitToViewport(), 0);
+    setTimeout(() => this._fitToViewport(), 120);
   };
 
   // первичный запуск
   rerunFit();
 
-  // события окна и вкладки
+  // системные события
   window.addEventListener('resize', rerunFit);
   window.addEventListener('orientationchange', rerunFit);
   window.addEventListener('load', rerunFit);
   window.addEventListener('pageshow', rerunFit);
 
-  // панель браузера (особенно важно для Яндекс/старых WebView)
-  if (window.visualViewport) {
-    visualViewport.addEventListener('resize', rerunFit);
-    visualViewport.addEventListener('scroll', rerunFit);
-  }
-
-  // вернулись на вкладку — обновим геометрию
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) rerunFit();
   });
 
-  // если есть анимация открытия шторки — пересчитать после неё
-  const dur = parseFloat(getComputedStyle(this.$.sheet).getPropertyValue('--sheet-open-dur')) || 420;
-  setTimeout(rerunFit, dur + 50);
+  if (window.visualViewport) {
+    const onVV = () => rerunFit();
+    visualViewport.addEventListener('resize', onVV);
+    visualViewport.addEventListener('scroll', onVV);
+  }
+
+  // Включаем анимации только после первого кадра (чтобы не было «мигания»)
+  requestAnimationFrame(() => {
+    if (this.$?.sheet) this.$.sheet.style.transition = '';
+    if (this.$?.overlay) this.$.overlay.classList.add('ready'); // теперь можно анимировать
+    rerunFit(); // финальная подгонка
+  });
 }
-
-
 
 open(meta = {}) {
   const $ = this.$;
