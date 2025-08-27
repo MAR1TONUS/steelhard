@@ -5,7 +5,7 @@
 <meta name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover">
 
-<title>я люблю тебя≺З </title>
+<title>я люблю тебя≺З</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
@@ -75,7 +75,7 @@ html, body { -webkit-tap-highlight-color: transparent; }
   --t-chapter-weight: 650;
   --t-chapter-color: #828282;
 
-  --t-time-size: 13px;
+  --t-time-size: 12px;
   --t-time-weight: 700;
   --t-time-color: #616161;
 
@@ -330,7 +330,6 @@ html, body { -webkit-tap-highlight-color: transparent; }
         <button class="btn" id="prev" aria-label="Предыдущий трек"></button>
         <button class="btn" id="back15" title="-15 сек" aria-label="Назад 15 секунд"></button>
         <button class="btn play" id="pp" aria-label="Воспроизвести/Пауза"></button>
-        <button class="btn pause" id="pp" aria-label="Пауза"></button>
         <button class="btn" id="fwd30" title="+30 сек" aria-label="Вперёд 30 секунд"></button>
         <button class="btn" id="next" aria-label="Следующий трек"></button>
       </div>
@@ -476,80 +475,7 @@ html, body { -webkit-tap-highlight-color: transparent; }
 </script>
 
 <script>
-(function markAffLocks(){
-  function update(){
-    document.querySelectorAll('.track').forEach(card=>{
-      const locked = !!card.querySelector('.aff-card');
-      card.classList.toggle('is-locked', locked);
-      if (locked){
-        card.setAttribute('aria-disabled','true');
-        card.tabIndex = -1;
-      } else {
-        card.removeAttribute('aria-disabled');
-      }
-    });
-  }
-  if (document.readyState === 'loading'){ document.addEventListener('DOMContentLoaded', update); }
-  else { update(); }
-  window.__updateAffLocks = update;
-})();
-</script>
-
-<script>
-(function(){
-  function getTitleFrom(card){
-    return card.getAttribute('data-title')
-        || card.querySelector('.track-title')?.textContent?.trim()
-        || 'Без названия';
-  }
-  function getPartFrom(card){
-    return card.getAttribute('data-part')
-        || card.querySelector('.track-chapter')?.textContent?.trim()
-        || '';
-  }
-  function getSrcFrom(card){
-    return card.getAttribute('data-src') || '';
-  }
-
-  function openFromCard(card){
-    const meta = {
-      title:     getTitleFrom(card), // основной заголовок под обложкой
-      partTitle: getPartFrom(card),  // строка «Глава 1», «Пролог» и т.п.
-      src:       getSrcFrom(card),
-      cover:     card.getAttribute('data-cover') || ''
-};
-    if (window.AudioSheet && typeof window.AudioSheet.open === 'function') {
-      window.AudioSheet.open(meta);
-    } else {
-      (window.__xa_queue = window.__xa_queue || []).push(meta);
-    }
-  }
-
-  // ✔ Делегирование клика: один обработчик на весь документ
-  function onDocClick(e){
-    // ищем ближайшую "карточку"
-    const card = e.target.closest('.track, .audio-track, .playlist-item, [data-open-player], .js-open-player');
-    if (!card) return;
-
-    // уважаем блокировку
-    if (card.classList.contains('is-locked')) return;
-    if (card.getAttribute('aria-disabled') === 'true') return;
-
-    openFromCard(card);
-  }
-
-  // Подключаем ОДИН раз "player-core.js?v=1"
-  if (!window.__xa_click_bound){
-    window.__xa_click_bound = true;
-    document.addEventListener('click', onDocClick, { capture: false });
-    console.log('[bind] click delegation ready');
-  }
-})();
-</script>
-
-<script>
 (function () {
-  // Контейнер со списком карточек. Исправь ID, если у тебя другой.
   const list = document.getElementById('tracks');
   if (!list) return;
 
@@ -559,49 +485,64 @@ html, body { -webkit-tap-highlight-color: transparent; }
     if (card.classList.contains('is-locked') || card.getAttribute('aria-disabled') === 'true') return;
 
     const meta = buildMetaFromCard(card);
-    AudioSheet.open(meta);
+    if (window.AudioSheet && typeof AudioSheet.open === 'function') {
+      AudioSheet.open(meta);
+    } else {
+      (window.__xa_queue = window.__xa_queue || []).push(meta);
+    }
   });
 
-  // Удобные помощники
   function textOf(root, sel) {
     const n = root.querySelector(sel);
     return n ? n.textContent.trim() : '';
   }
   function attr(root, name) {
-    // читаем и обычный атрибут, и data-*
     return root.getAttribute(name) || root.dataset[name] || '';
   }
 
-  // СБОРКА META — ВАЖНО: title = название, partTitle = глава
+  // title = название; partTitle = «Пролог/Глава 3» (человекочитаемо)
+  // chapter = номер главы (цифра), вместо "author"
   function buildMetaFromCard(card) {
-    const title     = attr(card, 'title') || textOf(card, '.track-title');       // Название трека
-    const partTitle = attr(card, 'part')  || textOf(card, '.track-chapter');     // Глава/часть
-    const cover     = attr(card, 'cover');                                       // data-cover или cover=""
-    const src       = attr(card, 'src');                                         // data-src или src=""
-    const author    = attr(card, 'author') || '';                                // необязательно
+    const title     = attr(card, 'title') || textOf(card, '.track-title');
+    const partTitle = textOf(card, '.track-chapter')
+                   || attr(card, 'partTitle')
+                   || attr(card, 'part');
 
-    return { title, partTitle, author, cover, src, opener: card };
+    // 1) предпочитаем явный номер: data-chapter или data-partNo
+    // 2) иначе пытаемся вытащить цифры из part/track-chapter
+    let chapter = attr(card, 'chapter') || attr(card, 'partNo');
+    if (!chapter) {
+      const raw = (attr(card, 'part') || textOf(card, '.track-chapter') || '').trim();
+      const m = raw.match(/\d+/);
+      chapter = m ? m[0] : '';
+    }
+
+    const cover = attr(card, 'cover');
+    const src   = attr(card, 'src');
+
+    return { title, partTitle, chapter, cover, src, opener: card };
   }
 })();
 </script>
 
+<script>
+  window.AudioSheetOptions = {
+    inlineCSS: `
+      :host{
+        --sheet-open-dur: 420ms;
+        --sheet-close-dur: 330ms;
+        --sheet-ease: cubic-bezier(.2,.9,.2,1);
+      }
+    `
+  };
+</script>
+
 <script src="player-core.bundle.v3.3.js"></script>
+
 <script>
   AudioSheet.configure({
     cover: 'img/cover.jpg',
   });
-</script>
-
-<script>
-(function () {
-  function setVH() {
-    var h = (window.visualViewport && window.visualViewport.height) || window.innerHeight;
-    document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
-  }
-  setVH();
-  window.addEventListener('resize', setVH);
-  window.addEventListener('orientationchange', setVH);
-})();
 </script>
 
 </body>
