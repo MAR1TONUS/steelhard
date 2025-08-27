@@ -6,33 +6,40 @@
   background:transparent;
   pointer-events:none;
   z-index:999999;
+  opacity: 0;
 }
-.overlay.open{ pointer-events:auto; }
+
+.overlay.ready{ opacity: 1; pointer-events: auto; }
+.overlay.open{  pointer-events:auto; }
+
+.overlay.ready .sheet{
+  transition: transform var(--sheet-open-dur, 420ms) var(--sheet-ease, cubic-bezier(.2,.9,.2,1));
+}
 
 .sheet{
   width: 100vw;
-
-  /* стабильный «пол» снизу (safe-area + твой зазор) */
-  padding-bottom: calc(
-    max(16px, env(safe-area-inset-bottom)) + var(--floor-gap, 24px)
-  );
-
-  
+  padding-bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--floor-gap, 24px));
   min-height: 100svh;
-  height: 100vh;   
+  height: 100vh;
   height: 100dvh;
-
   background: var(--bg, #4F4252);
-
-  /* твоя компоновка */
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+
+  transform: translate3d(0, 100%, 0);
+  transition: none;
+  will-change: transform;
 }
 
+.overlay.open .sheet{
+  transform: translateY(0%);
+}
 
-/* Внутренняя группа, которую можно масштабировать целиком */
+.overlay:not(.ready) .sheet{ visibility: hidden; }
+.overlay.ready .sheet{ visibility: visible; }
+
 .stack{
   position:absolute;
   left:50%; top:50%;
@@ -40,7 +47,6 @@
   transform: translate(-50%, -50%) scale(var(--fit, 1));
 }
 
-/* Все существующие блоки привяжем к .stack вместо .sheet */
 .stack > .cover,
 .stack > .meta,
 .stack > .progress-wrap,
@@ -49,8 +55,6 @@
   left:50%; top:50%;
   transform-origin:50% 50%;
 }
-
-.overlay.open .sheet{ transform:translateY(0%); }
 
 /* =========================
    Переменные (портрет)
@@ -66,7 +70,7 @@
   --lift: 0px;            
   --lift-max: 90px;       
   --lift-min-gap: 70px;   
-  --cover-lift-factor: .25;
+  --cover-lift-factor: .5;
 
   /* фон */
   --bg:#5A231A;
