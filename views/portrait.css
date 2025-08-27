@@ -69,7 +69,7 @@
 
   --lift: 0px;            
   --lift-max: 45px;       
-  --lift-min-gap: 30px;   
+  --lift-min-gap: 20px;   
   --cover-lift-factor: .25;
 
   /* фон */
