@@ -10,6 +10,10 @@
 .overlay.open{ pointer-events:auto; }
 
 .sheet{
+  padding-bottom: calc(
+    max(16px, env(safe-area-inset-bottom))  /* для iOS, вырезов, жестовой полоски */
+    + var(--floor-gap, 24px)                /* наш базовый «пол» */
+  );
   width: 100vw;
   min-height: 100svh;   /* когда панели браузера развернуты */
   height: 100dvh;       /* динамическая видимая высота */
@@ -55,7 +59,7 @@
   --lift-max: 90px;       /* потолок подъёма */
   --lift-min-gap: 70px;   /* минимальный отступ снизу до края экрана */
   --cover-lift-factor: .25;
-  
+
   /* фон */
   --bg:#5A231A;
 
