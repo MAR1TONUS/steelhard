@@ -97,34 +97,16 @@
   min-height: 100svh;
   height: 100dvh;
   background: var(--bg, #4F4252);
-}
-
-/* Внутренняя группа, которую можно масштабировать целиком */
-.stack{
-  position:absolute;
-  left:50%; top:50%;
-  transform-origin:50% 50%;
-  transform: translate(-50%, -50%) scale(var(--fit, 1));
-}
-
-/* Все существующие блоки привяжем к .stack вместо .sheet */
-.stack > .cover,
-.stack > .meta,
-.stack > .progress-wrap,
-.stack > .controls{
-  position:absolute;
-  left:50%; top:50%;
-  transform-origin:50% 50%;
+  position: relative;
 }
 
 
-/* Все блоки позиционируем из центра .sheet */
 .cover, .meta, .progress-wrap, .controls{
   position:absolute; left:50%; top:50%;
   transform-origin:50% 50%;
 }
 
-/* ===================== ОБЛОЖКА ===================== */
+
 .cover{
   transform: translate(-50%, -50%)
              translate(var(--cover-x), calc(var(--cover-y) * var(--pack,1)));
@@ -137,10 +119,11 @@
   filter:saturate(.98) contrast(.98);
 }
 
-/* ===================== ТЕКСТ (общий блок) ===================== */
+
 .meta{
+  position: absolute; left:50%; top:50%;
   transform: translate(-50%, -50%)
-             translate(var(--title-x), calc(var(--title-y) * var(--pack,1)));
+             translate(var(--meta-x,0px),  calc(var(--meta-y,0px)  * var(--pack,1)));
   text-align: left;
 
   /* новое: управляем расстоянием между строками через gap */
@@ -226,8 +209,9 @@
 
 /* ===================== КОНТРОЛЫ (только Y) ===================== */
 .controls{
+  position: absolute; left:50%; top:50%;
   transform: translate(-50%, -50%)
-             translate(var(--controls-x), calc(var(--controls-y) * var(--pack,1)));
+             translate(var(--controls-x,0px), calc(var(--controls-y,0px) * var(--pack,1)));
   display:flex; align-items:center; justify-content:center;
   gap:var(--controls-gap);
   line-height: 0; /* без влияния межстрочного интервала */
