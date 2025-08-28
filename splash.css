@@ -23,31 +23,31 @@
 
   /* ---------- КНОПКА ---------- */
   --btn-bg:           #1c1c1c;  
-  --btn-bg-active:    #505050; 
-  --btn-scale-active: 1.08;   
+  --btn-bg-active:    #303030; 
+  --btn-scale-active: 1.06;   
   --btn-width:        120px;  
   --btn-height:       44px;    
   --btn-pad-x:        24px;  
 /* КАРТОЧКА */
   --card-width:        880px;
   --card-height:       533px;
-  --card-bg:           rgba(15, 17, 24, .58);
+  --card-bg:           rgb(37 37 37 / 50%);;
   --card-border:       rgba(255,255,255,.08);
-  --card-radius:       15px;
-  --card-pad-x:        clamp(16px, 2.6vw, 28px);   /* по бокам */
+  --card-radius:       10px;
+  --card-pad-x:        clamp(10px, 2.6vw, 14px);   /* по бокам */
   /* новые — отдельные отступы сверху/снизу */
   --card-pad-top:      40px;
-  --card-pad-bottom:   clamp(25px, 2.4vw, 26px);
+  --card-pad-bottom:   clamp(35px, 2.4vw, 40px);
 
-  --blur-strength:     4px;
+  --blur-strength:     2px;
 
   /* ---------- ТЕКСТ 1 (плейсхолдер) ---------- */
-  --t1-size:           clamp(15px, 2.2vw, 18px);
+  --t1-size:           clamp(14px, 2.2vw, 16px);
   --t1-weight:         600;
   --t1-color:          #ffffff;
 
   /* ---------- ТЕКСТ 2 (в карточке) ---------- */
-  --t2-size:           clamp(15px, 2.1vw, 17px);
+  --t2-size:           clamp(12px, 2.1vw, 14px);
   --t2-weight:         500;
   --t2-color:          #eaeefc;
   --para-gap:          14px;       /* расстояние между абзацами */
