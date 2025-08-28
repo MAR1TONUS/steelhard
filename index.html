@@ -12,248 +12,59 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
 
 <style>
-
+/* === ТВОИ СТИЛИ — НЕ МЕНЯЛ === */
 body{ font-family:"Montserrat", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 h1{ font-family:"Bebas Neue Pro", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-
 html, body { -webkit-user-select:none; user-select:none; -webkit-touch-callout:none; }
 img{ -webkit-user-drag:none; }
-
-
 html, body { -webkit-tap-highlight-color: transparent; }
 :where(a, button, [tabindex]) { outline: none; }
 :where(a, button, [tabindex]):focus,
 :where(a, button, [tabindex]):focus-visible { outline: none; box-shadow: none; }
-
-@font-face {
-  font-family: "Bebas Neue Pro";
-  src: url("./fonts/BebasNeuePro_Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Bebas Neue Pro";
-  src: url("./fonts/BebasNeuePro_Bold.woff2") format("woff2");
-  font-weight: 700;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Bebas Neue Pro";
-  src: url("./fonts/BebasNeuePro_Light.woff2") format("woff2");
-  font-weight: 300;
-  font-style: normal;
-  font-display: swap;
-}
+@font-face { font-family: "Bebas Neue Pro"; src: url("./fonts/BebasNeuePro_Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Bebas Neue Pro"; src: url("./fonts/BebasNeuePro_Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Bebas Neue Pro"; src: url("./fonts/BebasNeuePro_Light.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
 
 :root{
-  --page-bg: #000;
-  --content-max-w: 500px;
-  --side-pad: 12px;
-
-  --title-block-w: 100%;
-  --title-top: 85px;
-  --title-bottom: 90px;
-  --title-size: 100px;
-  --title-width: 100px;
-  --title-weight: 400;
-  --title-color: #fff;
-  --title-letter-spacing: .5px;
-  --title-line-height: 0.86;
-
-  --divider-thickness: 2px;
-  --divider-color: #282828;
-  --divider-top: 12px;
-  --divider-bottom: 12px;
-
-  --t-title-size: 13px;
-  --t-title-weight: 650;
-  --t-title-color: #DBDADA;
-
-  --t-chapter-size: 12px;
-  --t-chapter-weight: 650;
-  --t-chapter-color: #828282;
-
-  --t-time-size: 12px;
-  --t-time-weight: 700;
-  --t-time-color: #616161;
-
+  --page-bg: #000; --content-max-w: 500px; --side-pad: 12px;
+  --title-block-w: 100%; --title-top: 85px; --title-bottom: 90px;
+  --title-size: 100px; --title-width: 100px; --title-weight: 400; --title-color: #fff; --title-letter-spacing: .5px; --title-line-height: 0.86;
+  --divider-thickness: 2px; --divider-color: #282828; --divider-top: 12px; --divider-bottom: 12px;
+  --t-title-size: 13px; --t-title-weight: 650; --t-title-color: #DBDADA;
+  --t-chapter-size: 12px; --t-chapter-weight: 650; --t-chapter-color: #828282;
+  --t-time-size: 12px; --t-time-weight: 700; --t-time-color: #616161;
   --track-title-maxw: 295px;
-
-  --aff-bg: rgba(43,43,43,.75);
-  --aff-radius: 7px;
-  --aff-border: 1px solid rgba(83, 83, 83, 0.2);
-  --aff-text-size: 13px;
-  --aff-text-weight: 750;
-  --aff-text-color: #939393;
-  --aff-pad-v: 14px;
-  --aff-pad-h: 14px;
-  --aff-blur: 4px;
-
-  --player-bg: #000;
-  --light-color: rgba(255,255,255,.55);
-  --light-blur: 34px;
-  --light-size: 64vw;
-
-  --time-top-margin: 10px;
-  --time-font-weight: 800;
-  --time-font-size: 14px;
-  --time-color: #e7e7e7;
-
-  --lane-min: 300px;          /* нижний предел */
-  --lane-max: 540px;          /* верхний предел (подгони под макет) */
-  --page-pad: 10px; 
+  --aff-bg: rgba(43,43,43,.75); --aff-radius: 7px; --aff-border: 1px solid rgba(83, 83, 83, 0.2);
+  --aff-text-size: 13px; --aff-text-weight: 750; --aff-text-color: #939393; --aff-pad-v: 14px; --aff-pad-h: 14px; --aff-blur: 4px;
+  --player-bg: #000; --light-color: rgba(255,255,255,.55); --light-blur: 34px; --light-size: 64vw;
+  --time-top-margin: 10px; --time-font-weight: 800; --time-font-size: 14px; --time-color: #e7e7e7;
+  --lane-min: 300px; --lane-max: 540px; --page-pad: 10px;
 }
-
-  html,body{height:100%;}
-  body{
-    margin:0; background:var(--page-bg); color:#fff;
-    font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
-    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
-    overflow-x:hidden;
-  }
-
-.page {
-  --rail: clamp(var(--rail-min), calc(100vw - 2 * var(--rail-pad)), var(--rail-max));
-}
-
-.content {
-  --lane: clamp(var(--lane-min),
-                calc(100vw - 2 * var(--page-pad)),
-                var(--lane-max));
-  padding-inline: var(--page-pad);
-  box-sizing: border-box;
-}
-
-.title-wrap{ width:var(--title-block-w); 
-  margin:var(--title-top) auto var(--title-bottom); 
-  text-align:center; 
-}
-
-.title{
-  margin: 0 auto 24px;
-  font-family: "Bebas Neue Pro";
-  font-size: var(--title-size);
-  font-weight: var(--title-weight);
-  letter-spacing: var(--title-letter-spacing);
-  line-height: var(--title-line-height);
-  color: var(--title-color);
-  text-transform: uppercase;
-  text-align: center;
-
-  
-  max-width: 250px;
-  width: min(100%, var(--rail));
-}
-
-.tracks{
-  width: min(100%, var(--rail));
-  margin-inline: auto;            
-}
-
-.divider{
-  width: var(--lane);
-  height: var(--divider-thickness);
-  background: var(--divider-color);
-  margin: 14px auto;
-  box-sizing: border-box;
-}
-  
-.track{
-  width: var(--lane);
-  margin-inline: auto;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  align-items: center;
-  gap: 12px;
-  
-  padding: 0px 7px;
-  box-sizing: border-box;
-  position: relative;
-}
-
+html,body{height:100%;}
+body{ margin:0; background:var(--page-bg); color:#fff; font-family:"Montserrat",system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; overflow-x:hidden; }
+.page { --rail: clamp(var(--rail-min), calc(100vw - 2 * var(--rail-pad)), var(--rail-max)); }
+.content { --lane: clamp(var(--lane-min), calc(100vw - 2 * var(--page-pad)), var(--lane-max)); padding-inline: var(--page-pad); box-sizing: border-box; }
+.title-wrap{ width:var(--title-block-w); margin:var(--title-top) auto var(--title-bottom); text-align:center; }
+.title{ margin: 0 auto 24px; font-family: "Bebas Neue Pro"; font-size: var(--title-size); font-weight: var(--title-weight); letter-spacing: var(--title-letter-spacing); line-height: var(--title-line-height); color: var(--title-color); text-transform: uppercase; text-align: center; max-width: 250px; width: min(100%, var(--rail)); }
+.tracks{ width: min(100%, var(--rail)); margin-inline: auto; }
+.divider{ width: var(--lane); height: var(--divider-thickness); background: var(--divider-color); margin: 14px auto; box-sizing: border-box; }
+.track{ width: var(--lane); margin-inline: auto; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 12px; padding: 0px 7px; box-sizing: border-box; position: relative; }
 .track-left{ min-width:0; }
-.track-title{ 
-  max-width:var(--track-title-maxw); 
-  font-size:var(--t-title-size); 
-  font-weight:var(--t-title-weight); 
-  color:var(--t-title-color); 
-  line-height:1.25;
-}
-.track-chapter{ 
-  margin-top:2px; 
-  font-size:var(--t-chapter-size); 
-  font-weight:var(--t-chapter-weight); 
-  color:var(--t-chapter-color); 
-}
-.track-time{ 
-  margin-left:auto; 
-  flex:0 0 auto; 
-  font-size:var(--t-time-size); 
-  font-weight:var(--t-time-weight); 
-  color:var(--t-time-color);
-}
-
-.aff-card{ 
-  position:absolute; 
-  left:50%; 
-  top:50%; 
-  transform: translate(-50%,-50%); 
-  width: var(--lane); 
-  box-sizing: border-box; 
-  min-height: calc(var(--aff-pad-v)*2 + var(--aff-text-size)*1.2); 
-  padding:var(--aff-pad-v) var(--aff-pad-h); background:var(--aff-bg); 
-  border:var(--aff-border); border-radius:var(--aff-radius); 
-  text-align:center; 
-  display:flex; 
-  align-items:center; 
-  justify-content:center; 
-  pointer-events:none; 
-  z-index:2; 
-  backdrop-filter:blur(var(--aff-blur));
-}
-
-.aff-text{ 
-  font-size:var(--aff-text-size); 
-  font-weight:var(--aff-text-weight); 
-  color:var(--aff-text-color); 
-  line-height:1.2; 
-  white-space:nowrap; 
-  opacity:0; 
-  transition: opacity .6s ease;
-}
+.track-title{ max-width:var(--track-title-maxw); font-size:var(--t-title-size); font-weight:var(--t-title-weight); color:var(--t-title-color); line-height:1.25; }
+.track-chapter{ margin-top:2px; font-size:var(--t-chapter-size); font-weight:var(--t-chapter-weight); color:var(--t-chapter-color); }
+.track-time{ margin-left:auto; flex:0 0 auto; font-size:var(--t-time-size); font-weight:var(--t-time-weight); color:var(--t-time-color); }
+.aff-card{ position:absolute; left:50%; top:50%; transform: translate(-50%,-50%); width: var(--lane); box-sizing: border-box; min-height: calc(var(--aff-pad-v)*2 + var(--aff-text-size)*1.2); padding:var(--aff-pad-v) var(--aff-pad-h); background:var(--aff-bg); border:var(--aff-border); border-radius:var(--aff-radius); text-align:center; display:flex; align-items:center; justify-content:center; pointer-events:none; z-index:2; backdrop-filter:blur(var(--aff-blur)); }
+.aff-text{ font-size:var(--aff-text-size); font-weight:var(--aff-text-weight); color:var(--aff-text-color); line-height:1.2; white-space:nowrap; opacity:0; transition: opacity .6s ease; }
 .aff-text.show{ opacity:1; }
-
-/* Главный список — только обрезание и троеточие, без градиента */
-:root {
-  --list-title-width: clamp(220px, 68vw, 540px);
-}
-
-.tracks .track-title {
-  width: var(--list-title-width);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-mask-image: none !important;
-          mask-image: none !important;
-}
-
-.tracks .track-chapter {
-  max-width: var(--list-title-width);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-mask-image: none !important;
-          mask-image: none !important;
-}
+:root { --list-title-width: clamp(220px, 68vw, 540px); }
+.tracks .track-title { width: var(--list-title-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-mask-image: none !important; mask-image: none !important; }
+.tracks .track-chapter { max-width: var(--list-title-width); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-mask-image: none !important; mask-image: none !important; }
 </style>
 </head>
 
 <body>
 
+<!-- ЗАГЛУШКА -->
 <launch-splash
   launch-at="2025-09-01T20:00:00+03:00"
   soon-text="Совсем скоро здесь что-нибудь появится"
@@ -268,11 +79,11 @@ html, body { -webkit-tap-highlight-color: transparent; }
 Книга поделена на главы и каждая глава будет появляться после 20:00. Произведение выбирал такое, чтобы тебе понравилось.
 
 Больше я задерживать тебя не буду, нажми на кнопочку ниже и сможешь послушать первую часть, а следующую придётся подождать. Я люблю тебя моя дорогая, очень сильно"
-
   btn-text="УГУМ"
   app-target="#app"
 ></launch-splash>
 
+<!-- ОСНОВНАЯ СТРАНИЦА -->
 <div id="app" hidden>
  <main class="page">
   <section class="content">
@@ -296,8 +107,7 @@ html, body { -webkit-tap-highlight-color: transparent; }
           <div class="track-title" data-title="">Джон мщу-за-всех</div>
           <div class="track-chapter">Глава 1</div>
         </div>
-
-      <time class="track-time">12:34</time>
+        <time class="track-time">12:34</time>
 
         <div class="aff-card" role="status" aria-live="polite">
           <div class="aff-text" id="affText">Я люблю тебя &lt;З</div>
@@ -306,49 +116,26 @@ html, body { -webkit-tap-highlight-color: transparent; }
 
       <div class="divider"></div>
     </div>
-
-    </section>
+  </section>
  </main>
 </div>
 
+<!-- Плеер как у тебя -->
 <template id="audio-sheet-tpl">
-  <!-- внешние стили остаются -->
   <link rel="stylesheet" href="views/portrait.css">
   <link rel="stylesheet" href="views/landscape.css">
-
-  
   <style>
-  :root{
-   
-    --sheet-open-dur: 800ms;
-    --sheet-close-dur: 800ms;
-    --sheet-ease: cubic-bezier(.2,.9,.2,1);
-  }
-
-  /* шторка изначально под экраном; без эффектов */
-  .sheet{
-    transform: translateY(100%);
-    transition: transform var(--sheet-open-dur) var(--sheet-ease);
-    will-change: transform;
-  }
-
-  /* открыть — поднять */
-  .overlay.open .sheet{
-    transform: translateY(0%);
-  }
-
-  /* закрыть программно — вниз */
+    :root{ --sheet-open-dur: 800ms; --sheet-close-dur: 800ms; --sheet-ease: cubic-bezier(.2,.9,.2,1); }
+    .sheet{ transform: translateY(100%); transition: transform var(--sheet-open-dur) var(--sheet-ease); will-change: transform; }
+    .overlay.open .sheet{ transform: translateY(0%); }
   </style>
-
   <div class="overlay" aria-hidden="true">
     <div class="sheet" role="dialog" aria-label="Аудиоплеер">
       <div class="cover"><div class="img" id="cover" aria-hidden="true"></div></div>
-
       <div class="meta">
         <div class="title" id="title"><span>Название</span></div>
         <div class="author" id="author">Автор</div>
       </div>
-
       <div class="controls" id="controls">
         <button class="btn" id="prev" aria-label="Предыдущий трек"></button>
         <button class="btn" id="back15" title="-15 сек" aria-label="Назад 15 секунд"></button>
@@ -356,96 +143,43 @@ html, body { -webkit-tap-highlight-color: transparent; }
         <button class="btn" id="fwd30" title="+30 сек" aria-label="Вперёд 30 секунд"></button>
         <button class="btn" id="next" aria-label="Следующий трек"></button>
       </div>
-
       <div class="progress-wrap">
-        <div class="bar" id="bar">
-          <div class="bg" id="bg"></div>
-          <div class="fill" id="fill"></div>
-          <div class="knob" id="knob" aria-hidden="true"></div>
-        </div>
-        <div class="time">
-          <span id="cur">00:00</span>
-          <span id="dur">00:00</span>
-        </div>
+        <div class="bar" id="bar"><div class="bg" id="bg"></div><div class="fill" id="fill"></div><div class="knob" id="knob" aria-hidden="true"></div></div>
+        <div class="time"><span id="cur">00:00</span><span id="dur">00:00</span></div>
       </div>
-
       <audio id="audio" preload="metadata"></audio>
     </div>
   </div>
 </template>
 
+<script>
+/* цикл фраз в твоём оверлее — как было */
+(() => {
+  const phrases = ['Я люблю тебя <З','У тебя всё получится!','Ты умничка <З','Я горжусь тобой!','Ты прекрасна','Ты моё солнышко <З'];
+  const el = document.getElementById('affText'); if(!el) return;
+  const getDur = () => { const d = getComputedStyle(el).transitionDuration.split(',')[0].trim(); if (d.endsWith('ms')) return parseFloat(d)||600; if (d.endsWith('s')) return (parseFloat(d)||0.6)*1000; return 600; };
+  const D = getDur(); let i = 0;
+  function cycle(){ el.classList.remove('show'); setTimeout(()=>{ i=(i+1)%phrases.length; el.textContent=phrases[i]; requestAnimationFrame(()=> el.classList.add('show')); }, D); }
+  el.textContent = phrases[i]; requestAnimationFrame(()=> el.classList.add('show')); setInterval(cycle, 7000);
+})();
+</script>
 
 <script>
-(() => {
-  const phrases = [
-    'Я люблю тебя <З',
-    'У тебя всё получится!',
-    'Ты умничка <З',
-    'Я горжусь тобой!',
-    'Ты прекрасна',
-    'Ты моё солнышко <З'
-  ];
-  const el = document.getElementById('affText');
-  if(!el) return;
-  let i = 0;
-
-  const getDur = () => {
-    const d = getComputedStyle(el).transitionDuration.split(',')[0].trim();
-    if (d.endsWith('ms')) return parseFloat(d) || 600;
-    if (d.endsWith('s')) return (parseFloat(d) || 0.6) * 1000;
-    return 600;
-  };
-  const D = getDur();
-
-  function cycle(){
-    el.classList.remove('show');
-    setTimeout(() => {
-      i = (i+1) % phrases.length;
-      el.textContent = phrases[i];
-      requestAnimationFrame(() => el.classList.add('show'));
-    }, D);
-  }
-
-  el.textContent = phrases[i];
-  requestAnimationFrame(() => el.classList.add('show'));
-  setInterval(cycle, 7000);
-})();
-
+/* усечение заголовков — как было */
 (() => {
   const getCSS = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const ruler = document.createElement('span');
-  Object.assign(ruler.style,{
-    position:'absolute', visibility:'hidden', whiteSpace:'nowrap',
-    fontSize: getCSS('--t-title-size'),
-    fontWeight: getCSS('--t-title-weight'),
-    fontFamily: getComputedStyle(document.body).fontFamily
-  });
+  Object.assign(ruler.style,{ position:'absolute', visibility:'hidden', whiteSpace:'nowrap', fontSize:getCSS('--t-title-size'), fontWeight:getCSS('--t-title-weight'), fontFamily:getComputedStyle(document.body).fontFamily });
   document.body.appendChild(ruler);
-
   document.querySelectorAll('.track-title[data-title]').forEach(el=>{
     const maxW = parseFloat(getCSS('--track-title-maxw'));
-    const txt = el.textContent.trim().replace(/\s+/g,' ');
-    el.setAttribute('title', txt);
-
-    ruler.textContent = txt;
-    if (ruler.offsetWidth <= maxW) return;
-
-    const words = txt.split(' ');
-    let out = '';
+    const txt = el.textContent.trim().replace(/\s+/g,' '); el.setAttribute('title', txt);
+    ruler.textContent = txt; if (ruler.offsetWidth <= maxW) return;
+    const words = txt.split(' '); let out = '';
     for(let k=0;k<words.length;k++){
-      const next = (out ? out+' ' : '') + words[k];
-      ruler.textContent = next + '…';
+      const next = (out ? out+' ' : '') + words[k]; ruler.textContent = next + '…';
       if (ruler.offsetWidth <= maxW){ out = next; continue; }
-
-      if (words[k].length >= 7){
-        let cut = words[k];
-        while (cut.length > 1){
-          cut = cut.slice(0,-1);
-          const cand = (out ? out+' ' : '') + cut + '…';
-          ruler.textContent = cand;
-          if (ruler.offsetWidth <= maxW){ out = (out? out+' ' : '') + cut; break; }
-        }
-      }
+      if (words[k].length >= 7){ let cut = words[k]; while (cut.length > 1){ cut = cut.slice(0,-1); const cand = (out ? out+' ' : '') + cut + '…'; ruler.textContent = cand; if (ruler.offsetWidth <= maxW){ out = (out? out+' ' : '') + cut; break; } } }
       break;
     }
     el.textContent = out + '…';
@@ -454,118 +188,161 @@ html, body { -webkit-tap-highlight-color: transparent; }
 </script>
 
 <script>
+/* запрет выделения — как было */
 (function(){
-  // Что считаем редактируемым (там выделение разрешено)
-  const isEditable = (el) => {
-    if (!el) return false;
-    if (el.closest('[contenteditable="true"]')) return true;
-    const tag = el.tagName;
-    return tag === 'INPUT' || tag === 'TEXTAREA';
-  };
-
-  // 1) Блокируем старт выделения в не-редактируемых областях
-  document.addEventListener('selectstart', (e) => {
-    if (!isEditable(e.target)) {
-      e.preventDefault();
-    }
-  });
-
-  // 2) На десктопе: даблклик по тексту превращается в выделение — гасим его.
-  // Важно: перехватываем именно mousedown с detail>1, НЕ click
-  document.addEventListener('mousedown', (e) => {
-    if (e.detail > 1 && !isEditable(e.target)) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-
-  // 3) Перестраховка от dblclick
-  document.addEventListener('dblclick', (e) => {
-    if (!isEditable(e.target)) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-
-  // 4) На мобильных выделение иногда всё же появляется — мягко снимаем
-  document.addEventListener('selectionchange', () => {
-    const sel = window.getSelection && window.getSelection();
-    if (!sel || sel.isCollapsed) return;
-    const anchorEl = sel.anchorNode && (sel.anchorNode.nodeType === 1 ? sel.anchorNode : sel.anchorNode.parentElement);
-    if (!isEditable(anchorEl)) {
-      try { sel.removeAllRanges(); } catch(_) {}
-    }
-  });
+  const isEditable = (el) => { if (!el) return false; if (el.closest('[contenteditable="true"]')) return true; const tag = el.tagName; return tag==='INPUT'||tag==='TEXTAREA'; };
+  document.addEventListener('selectstart', (e) => { if (!isEditable(e.target)) e.preventDefault(); });
+  document.addEventListener('mousedown', (e) => { if (e.detail>1 && !isEditable(e.target)) e.preventDefault(); }, { passive:false });
+  document.addEventListener('dblclick', (e) => { if (!isEditable(e.target)) e.preventDefault(); }, { passive:false });
+  document.addEventListener('selectionchange', () => { const sel = window.getSelection && window.getSelection(); if (!sel || sel.isCollapsed) return; const anchorEl = sel.anchorNode && (sel.anchorNode.nodeType===1 ? sel.anchorNode : sel.anchorNode.parentElement); if (!isEditable(anchorEl)) { try { sel.removeAllRanges(); } catch(_) {} } });
 })();
 </script>
 
 <script>
+/* открыть плеер по клику — как было */
 (function () {
-  const list = document.getElementById('tracks');
-  if (!list) return;
-
+  const list = document.getElementById('tracks'); if (!list) return;
   list.addEventListener('click', (e) => {
-    const card = e.target.closest('.track');
-    if (!card) return;
+    const card = e.target.closest('.track'); if (!card) return;
     if (card.classList.contains('is-locked') || card.getAttribute('aria-disabled') === 'true') return;
-
     const meta = buildMetaFromCard(card);
-    if (window.AudioSheet && typeof AudioSheet.open === 'function') {
-      AudioSheet.open(meta);
-    } else {
-      (window.__xa_queue = window.__xa_queue || []).push(meta);
-    }
+    if (window.AudioSheet && typeof AudioSheet.open === 'function') { AudioSheet.open(meta); }
+    else { (window.__xa_queue = window.__xa_queue || []).push(meta); }
   });
-
-  function textOf(root, sel) {
-    const n = root.querySelector(sel);
-    return n ? n.textContent.trim() : '';
-  }
-  function attr(root, name) {
-    return root.getAttribute(name) || root.dataset[name] || '';
-  }
-
-  // title = название; partTitle = «Пролог/Глава 3» (человекочитаемо)
-  // chapter = номер главы (цифра), вместо "author"
+  function textOf(root, sel) { const n = root.querySelector(sel); return n ? n.textContent.trim() : ''; }
+  function attr(root, name) { return root.getAttribute(name) || root.dataset[name] || ''; }
   function buildMetaFromCard(card) {
-    const title     = attr(card, 'title') || textOf(card, '.track-title');
-    const partTitle = textOf(card, '.track-chapter')
-                   || attr(card, 'partTitle')
-                   || attr(card, 'part');
-
-    // 1) предпочитаем явный номер: data-chapter или data-partNo
-    // 2) иначе пытаемся вытащить цифры из part/track-chapter
-    let chapter = attr(card, 'chapter') || attr(card, 'partNo');
-    if (!chapter) {
-      const raw = (attr(card, 'part') || textOf(card, '.track-chapter') || '').trim();
-      const m = raw.match(/\d+/);
-      chapter = m ? m[0] : '';
-    }
-
-    const cover = attr(card, 'cover');
-    const src   = attr(card, 'src');
-
+    const title = attr(card,'title') || textOf(card,'.track-title');
+    const partTitle = textOf(card,'.track-chapter') || attr(card,'partTitle') || attr(card,'part');
+    let chapter = attr(card,'chapter') || attr(card,'partNo');
+    if (!chapter) { const raw = (attr(card,'part') || textOf(card,'.track-chapter') || '').trim(); const m = raw.match(/\d+/); chapter = m ? m[0] : ''; }
+    const cover = attr(card,'cover'); const src = attr(card,'src');
     return { title, partTitle, chapter, cover, src, opener: card };
   }
 })();
 </script>
 
+<!-- === ЛОГИКА ЗАГЛУШКИ: до 1 сентября — только первый текст; с 1 сентября — экран с кнопкой === -->
 <script>
-  window.AudioSheetOptions = {
-    inlineCSS: `
-      :host{
-        --sheet-open-dur: 420ms;
-        --sheet-close-dur: 330ms;
-        --sheet-ease: cubic-bezier(.2,.9,.2,1);
-      }
-    `
-  };
+(function(){
+  const GATE_KEY = 'gate:dismissed';
+  const SEPT1_00 = new Date(2025, 8, 1, 0, 0, 0, 0); // 1 Sep 2025 00:00 локально
+
+  const splash = document.querySelector('launch-splash');
+  const app    = document.getElementById('app');
+
+  // если уже входили — всегда показываем приложение
+  if (localStorage.getItem(GATE_KEY) === '1') {
+    app?.removeAttribute('hidden');
+    splash?.remove();
+    return;
+  }
+
+  if (!splash) { app?.removeAttribute('hidden'); return; }
+
+  const now = new Date();
+  if (now < SEPT1_00) {
+    // ДО 1 сентября: жестко держим первый текст (без авто-переключения на welcome)
+    splash.setAttribute('launch-at', '2025-09-01T00:00:00');      // в полночь 1-го компонент сам перейдет в "вторая версия"
+    splash.setAttribute('delay', String(365 * 24 * 3600 * 1000)); // огромный delay, чтобы не переключал через 5 сек
+
+    // На всякий случай убираем карточку с кнопкой, если появится (в теневом DOM)
+    const purgeCard = () => {
+      const sr = splash.shadowRoot;
+      if (!sr) return requestAnimationFrame(purgeCard);
+      sr.querySelector('.ws-card')?.remove();
+      sr.querySelector('.ws-btn')?.remove();
+    };
+    purgeCard();
+  } else {
+    // С 1 сентября и позже: показываем вторую версию с кнопкой
+    splash.removeAttribute('launch-at');
+    splash.setAttribute('delay', '300');
+
+    // по клику на кнопку — запоминаем флаг, чтобы больше не показывать заглушку
+    const wire = () => {
+      const sr = splash.shadowRoot; if (!sr) return requestAnimationFrame(wire);
+      const btn = sr.querySelector('.ws-btn'); if (!btn) return requestAnimationFrame(wire);
+      btn.addEventListener('click', () => { localStorage.setItem(GATE_KEY, '1'); });
+    };
+    wire();
+
+    // когда сам компонент спрячется/удалится — показываем приложение
+    const mo = new MutationObserver(() => {
+      if (!document.body.contains(splash)) { app?.removeAttribute('hidden'); mo.disconnect(); }
+    });
+    mo.observe(document.body, { childList:true, subtree:true });
+  }
+})();
 </script>
 
-<script src="player-core.bundle.v3.3.js"></script>
+<!-- === РАСПИСАНИЕ ТРЕКОВ: 1-й — сразу; 2-й — 2 сен 20:00; дальше ежедневно в 20:00 === -->
+<script>
+(function(){
+  const list  = document.getElementById('tracks'); if (!list) return;
+  const cards = Array.from(list.querySelectorAll('.track'));
+
+  const DAILY_HOUR = 20; // 20:00 локально
+  // База: 1 сентября 20:00 → для card[1] (второго) это даст 2 сентября 20:00 и т.д.
+  const BASE = new Date(2025, 8, 1, DAILY_HOUR, 0, 0, 0);
+
+  const schedule = [];
+
+  cards.forEach((card, idx) => {
+    if (idx === 0) {
+      // первый трек доступен сразу
+      card.classList.remove('is-locked');
+      card.removeAttribute('aria-disabled');
+      card.querySelector('.aff-card')?.remove();
+      return;
+    }
+    const unlockAt = +BASE + idx * 86400000; // idx=1 → +1 день (2 сен 20:00), idx=2 → +2 дня …
+    if (Date.now() >= unlockAt) {
+      card.classList.remove('is-locked');
+      card.removeAttribute('aria-disabled');
+      card.querySelector('.aff-card')?.remove();
+    } else {
+      card.classList.add('is-locked');
+      card.setAttribute('aria-disabled', 'true');
+      // Никаких доп. текстов в оверлей не добавляю — он у тебя свой
+      schedule.push({ card, t: unlockAt });
+    }
+  });
+
+  const check = () => {
+    const now = Date.now();
+    for (let i = schedule.length - 1; i >= 0; i--) {
+      const it = schedule[i];
+      if (now >= it.t) {
+        it.card.classList.remove('is-locked');
+        it.card.removeAttribute('aria-disabled');
+        it.card.querySelector('.aff-card')?.remove();
+        schedule.splice(i, 1);
+      }
+    }
+    if (!schedule.length) clearInterval(tick);
+  };
+
+  // Точные таймауты + минутный тик
+  schedule.forEach(it => { const ms = Math.max(0, it.t - Date.now()); setTimeout(check, ms + 30); });
+  const tick = setInterval(check, 60 * 1000);
+})();
+</script>
 
 <script>
-  AudioSheet.configure({
-    cover: 'img/cover.jpg',
-  });
+  /* конфиг плеера */
+  window.AudioSheetOptions = { inlineCSS: `:host{ --sheet-open-dur: 420ms; --sheet-close-dur: 330ms; --sheet-ease: cubic-bezier(.2,.9,.2,1); }` };
+</script>
+<script src="player-core.bundle.v3.3.js"></script>
+<script> AudioSheet.configure({ cover: 'img/cover.jpg' }); </script>
+
+<!-- === РЕГИСТРАЦИЯ SERVICE WORKER === -->
+<script>
+(function(){
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+})();
 </script>
 
 </body>
