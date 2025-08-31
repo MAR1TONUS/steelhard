@@ -9,12 +9,21 @@ permissions:
   pages: write
   id-token: write
 
+# Рекомендуемая «анти-гонка» конфигурация для Pages
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      # Обязательный шаг для Pages
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
 
       - name: Compute build id (short commit hash)
         id: meta
@@ -32,17 +41,17 @@ jobs:
           B="${{ steps.meta.outputs.SHORT_SHA }}"
           echo "BUILD ID: $B"
 
-          # если уже есть ?v=... (включая {{ site.time }}), заменим на хэш
+          # Заменим существующие ?v=... (включая {{ site.time }})
           sed -i -E "s/(splash\.js)\?v=[^\"']+/\1?v=$B/g" index.html || true
           sed -i -E "s/(player-core\.bundle\.v3\.3\.js)\?v=[^\"']+/\1?v=$B/g" index.html || true
           sed -i -E "s/(splash\.css)\?v=[^\"']+/\1?v=$B/g" index.html || true
 
-          # если ?v= не было вовсе — добавим
+          # Если ?v= не было — добавим
           sed -i -E "s/(splash\.js)([\"'])/\1?v=$B\2/g" index.html
           sed -i -E "s/(player-core\.bundle\.v3\.3\.js)([\"'])/\1?v=$B\2/g" index.html
           sed -i -E "s/(splash\.css)([\"'])/\1?v=$B\2/g" index.html
 
-          # (опционально) bump версии кэша в sw.js, если есть CACHE_VERSION
+          # (опционально) bump версии кэша в sw.js, если есть константа
           if grep -q "CACHE_VERSION" sw.js; then
             sed -i -E "s/(CACHE_VERSION\s*=\s*')[^']+(')/\1$B\2/" sw.js
           fi
@@ -53,6 +62,7 @@ jobs:
           grep -nE '(splash\.css|splash\.js|player-core\.bundle\.v3\.3\.js)' index.html || true
           echo "----------------------------"
 
+      # Загружаем папку проекта как артефакт для Pages
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -65,6 +75,7 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      # Деплоим именно тот артефакт, который собрали выше
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
