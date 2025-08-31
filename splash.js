@@ -51,14 +51,16 @@
       const welcomeText = (this.getAttribute('welcome-text') || 'Добро пожаловать!').trim();
       const btnText     =  this.getAttribute('btn-text')      || 'Начать';
       const appSel      =  this.getAttribute('app-target')    || '#app';
-      const delay       = +(this.getAttribute('delay')        || 5000);
+      const launchAtRaw =  this.getAttribute('launch-at');
+      const PHASE2_AT   = launchAtRaw ? new Date(launchAtRaw) : null;
 
       this._renderStars(false);
 
       this.$.ttl.textContent = '';
       this.$.txt.textContent = soonText;
 
-      setTimeout(() => {
+      // === ВМЕСТО delay/setTimeout: строго по launch-at ===
+      const enterPhase2 = () => {
         this.$.txt.classList.add('ws-phase-fade-out');
 
         const enter = () => {
@@ -94,7 +96,22 @@
 
         this.$.txt.addEventListener('animationend', enter, { once:true });
         setTimeout(enter, 340);
-      }, delay);
+      };
+
+      const now = new Date();
+      if (PHASE2_AT && now >= PHASE2_AT) {
+        // Дата уже наступила — сразу включаем фазу 2
+        enterPhase2();
+      } else if (PHASE2_AT) {
+        // «Сторож»: раз в секунду проверяем наступление времени
+        const tid = setInterval(() => {
+          if (new Date() >= PHASE2_AT) {
+            clearInterval(tid);
+            enterPhase2();
+          }
+        }, 1000);
+      }
+      // === КОНЕЦ правки ===
 
       const reStars = debounce(() => this._renderStars(true), 160);
       window.addEventListener('resize', reStars);
@@ -109,68 +126,155 @@
       if (app){ app.removeAttribute('hidden'); app.classList.remove('is-hidden'); }
     }
 
-    /* Звёзды: количество по площади + отрицательная задержка мерцания */
+    /* Звёзды: количество по площади — канвас-версия (быстро и без лагов на iOS) */
     _renderStars(fromResize){
-      const cssNum = (name, fb) => { const v=getComputedStyle(this).getPropertyValue(name).trim(); return v?+v:fb; };
-      const attrNum= (name, fb) => (this.hasAttribute(name) ? +this.getAttribute(name) : fb);
+      // ⚙️ множитель скорости можно задавать атрибутом элемента:
+      // <launch-splash speed-mult="1.6"></launch-splash>
+      const host = this; // custom element <launch-splash>
+      const SPEED_MULT = Math.max(0.2, parseFloat(host.getAttribute('speed-mult') || '1')) || 1;
 
-      const base1 = attrNum('stars',  cssNum('--stars-1',160));
-      const base2 = attrNum('stars2', cssNum('--stars-2', 90));
+      // Отключаем тяжёлые DOM-слои (если были отрендерены ранее)
+      const sheet = this.$.sheet;
+      const s1 = this.$.s1, s2 = this.$.s2;
+      if (s1) s1.style.display = 'none';
+      if (s2) s2.style.display = 'none';
 
-      const area = Math.max(320, innerWidth) * Math.max(480, innerHeight);
-      const baseArea = 390 * 844; // iPhone 12 Pro
-      const scale = Math.min(1.7, Math.max(0.55, area / baseArea));
+      // Находим контейнер неба
+      const skyHost = sheet.querySelector('.sky');
+      if (!skyHost) return;
 
-      const n1 = Math.round(base1 * scale);
-      const n2 = Math.round(base2 * scale);
+      // Если канвас уже есть — удалим, чтобы пересоздать корректно под текущий размер
+      const old = skyHost.querySelector('canvas.starfield-canvas');
+      if (old) old.remove();
 
-      const tMin=attrNum('twinkle-min', cssNum('--twinkle-min',6));
-      const tMax=attrNum('twinkle-max', cssNum('--twinkle-max',10));
-      const zMin=attrNum('size-min',    cssNum('--star-size-min',1));
-      const zMax=attrNum('size-max',    cssNum('--star-size-max',2));
+      // Создаём канвас поверх «неба»
+      const canvas = document.createElement('canvas');
+      canvas.className = 'starfield-canvas';
+      Object.assign(canvas.style, {
+        position: 'absolute',
+        inset: '0',
+        width: '100%',
+        height: '100%',
+        pointerEvents: 'none',
+        zIndex: '0'
+      });
+      skyHost.style.position = 'absolute';
+      skyHost.style.inset = '0';
+      skyHost.appendChild(canvas);
 
-      const mk = (wrap, n) => {
-        wrap.replaceChildren();
-        const frag = document.createDocumentFragment();
+      const ctx = canvas.getContext('2d');
+      const DPR = Math.min(2, (window.devicePixelRatio || 1));
 
-        for (let i = 0; i < n; i++){
-          const e = document.createElement('i');
-          e.className = 'star';
+      let stars = [];
+      let rafId = 0;
+      let lastT = 0;
+      let paused = false;
 
-          // координаты
-          const x = Math.random() * 100;
-          const y = Math.random() * 100;
+      // Чем больше — тем быстрее «живет» звезда (мигает)
+      const TWINKLE_RATE = 0.02 * SPEED_MULT;
 
-          // размер (px) и альфа
-          const sz = (zMin + Math.random()*(zMax - zMin)).toFixed(2);
-          const alp = (0.6 + Math.random()*0.4).toFixed(2); // 0.60..1.00
+      function rand(a, b){ return a + Math.random()*(b-a); }
 
-          // мерцание и небольшая «рассинхронизация»
-          const tw= (tMin + Math.random()*(tMax - tMin)).toFixed(2);
-          const de= (-Math.random()*tw).toFixed(2);
+      function resize(){
+        const rect = sheet.getBoundingClientRect();
+        const w = Math.max(320, rect.width);
+        const h = Math.max(480, rect.height);
 
-          // лёгкий рандом поворота
-          const ang = (Math.random()*360).toFixed(1) + 'deg';
+        canvas.width  = Math.round(w * DPR);
+        canvas.height = Math.round(h * DPR);
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-          // Позиция отдельными свойствами → анимация transform не ломает координаты
-          e.style.left = x + 'vw';
-          e.style.top  = y + 'vh';
-          e.style.transform = `rotate(${ang})`;
+        // Кол-во звёзд по площади экрана (ориентир — iPhone 12/13)
+        const baseArea = 390 * 844;
+        const area = w * h;
+        const scale = Math.min(1.5, Math.max(0.55, area / baseArea));
+        const N = Math.round(100 * scale); // примерно 55..150
 
-          // CSS-переменные для .star
-          e.style.setProperty('--sz',  sz + 'px');
-          e.style.setProperty('--a',   alp);     // ВАЖНО: это альфа, не градусы!
-          e.style.setProperty('--tw',  tw + 's');
-          e.style.setProperty('--de',  de + 's');
+        stars = new Array(N).fill(0).map(() => {
+          const speed = rand(0.15, 0.25) * SPEED_MULT; // можно увеличить верхнюю границу для ещё быстрее
+          return {
+            x: rand(0, w),
+            y: rand(0, h),
+            r: rand(0.5, 1.6),
+            a: rand(0.5, 1.0),
+            t: rand(0, Math.PI*2),
+            speed
+          };
+        });
+      }
 
-          frag.appendChild(e);
+      function draw(ts){
+        if (paused) return;
+        rafId = requestAnimationFrame(draw);
+        if (!ts) ts = performance.now();
+        const dt = Math.min(33, ts - lastT || 16);
+        lastT = ts;
+
+        ctx.clearRect(0,0,canvas.width, canvas.height);
+        ctx.save();
+        for (const s of stars){
+          s.t += s.speed * dt * TWINKLE_RATE;
+          const tw = 0.5 + Math.sin(s.t) * 0.5; // 0..1
+          const alpha = (s.a * (0.65 + 0.35*tw));
+          ctx.globalAlpha = alpha;
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+          ctx.fillStyle = '#fff';
+          ctx.fill();
         }
-        wrap.appendChild(frag);
+        ctx.restore();
+      }
+
+      const isReduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      const onVisibility = () => {
+        const hidden = document.hidden || isReduced();
+        paused = hidden;
+        if (paused) {
+          cancelAnimationFrame(rafId); rafId = 0;
+        } else if (!rafId) {
+          lastT = performance.now();
+          rafId = requestAnimationFrame(draw);
+        }
       };
 
-      mk(this.$.s1, n1);
-      mk(this.$.s2, n2);
+      // iOS pull-to-refresh: пауза на время жеста
+      let pulling = false;
+      let startY = 0;
+      const onTouchStart = (e) => {
+        const sc = document.scrollingElement;
+        if (sc && sc.scrollTop <= 0) {
+          startY = e.touches ? e.touches[0].clientY : 0;
+          pulling = true;
+        }
+      };
+      const onTouchMove = (e) => {
+        if (!pulling) return;
+        const y = e.touches ? e.touches[0].clientY : 0;
+        if (y - startY > 4) {
+          paused = true;
+          cancelAnimationFrame(rafId); rafId = 0;
+        }
+      };
+      const onTouchEnd = () => { pulling = false; onVisibility(); };
+
+      // Подписки
+      const re = () => { resize(); onVisibility(); };
+      re();
+
+      const ro = new ResizeObserver(re);
+      ro.observe(sheet);
+
+      document.addEventListener('visibilitychange', onVisibility);
+      window.addEventListener('touchstart', onTouchStart, { passive: true });
+      window.addEventListener('touchmove',  onTouchMove,  { passive: true });
+      window.addEventListener('touchend',   onTouchEnd,   { passive: true });
+
+      if (!isReduced()) rafId = requestAnimationFrame(draw);
     }
+
   }
 
   customElements.define('launch-splash', LaunchSplash);
