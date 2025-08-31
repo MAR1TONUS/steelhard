@@ -1,104 +1,117 @@
-/* Service Worker: предзагрузка и кэширование статики */
-const CACHE_VER = 'v1.0.1';            // ↑ подними версию
-const STATIC_CACHE = `static-${CACHE_VER}`;
+// --- Service Worker: автообновления без ручных версий ---
+// Стратегии:
+// - HTML: network-first (всегда пытаемся взять свежий index.html, офлайн -> кэш)
+// - CSS/JS: stale-while-revalidate (сразу из кэша, параллельно докачиваем свежее)
+// - Остальная статика (картинки/шрифты/медиа): stale-while-revalidate
+// ВАЖНО: никогда не подменяем .css/.js на index.html (иначе стили «ломаются»)
 
-const PRECACHE = [
-  'index.html',
-  'splash.css',
-  'splash.js',
-  'player-core.bundle.v3.3.js',
-  'views/portrait.css',
-  'views/landscape.css',
-  'fonts/BebasNeuePro_Regular.woff2',
-  'fonts/BebasNeuePro_Bold.woff2',
-  'fonts/BebasNeuePro_Light.woff2',
-  'img/cover.jpg',
-  // 'favicon.ico',
-  // 'apple-touch-icon.png',
-];
+const CACHE_PREFIX = 'auto';
+const STATIC_CACHE = `${CACHE_PREFIX}-static`;
 
 self.addEventListener('install', (event) => {
+  // Без предкэша — всё кладём в кэш «по мере обращения»
   self.skipWaiting();
-  event.waitUntil((async () => {
-    const cache = await caches.open(STATIC_CACHE);
-    await Promise.all(PRECACHE.map(async (url) => {
-      try {
-        const res = await fetch(url, { cache: 'reload' });
-        if (res.ok) await cache.put(url, res.clone());
-      } catch (_) { /* пропускаем отсутствующие */ }
-    }));
-  })());
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
+    // Чистим кэши от других реализаций (если были с другими префиксами)
     const keys = await caches.keys();
     await Promise.all(
-      keys.map((k) => (k.startsWith('static-') && k !== STATIC_CACHE) ? caches.delete(k) : null)
+      keys
+        .filter(k => !k.startsWith(CACHE_PREFIX))
+        .map(k => caches.delete(k))
     );
     await self.clients.claim();
   })());
 });
 
+// helpers
+const isSameOrigin = (url) => url.origin === self.location.origin;
+const isHTML = (req) =>
+  req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html');
+
+const isCSS = (url) => /\.css(\?|$)/i.test(url.pathname);
+const isJS  = (url) => /\.m?js(\?|$)/i.test(url.pathname);
+const isStatic = (url) =>
+  isCSS(url) || isJS(url) ||
+  /\.(png|jpg|jpeg|webp|gif|svg|ico|woff2?|ttf|otf|mp3|mp4|wav|ogg)(\?|$)/i.test(url.pathname);
+
+async function put(cacheName, req, res) {
+  try {
+    const cache = await caches.open(cacheName);
+    await cache.put(req, res.clone());
+  } catch (_) {}
+}
+
+// HTML: network-first (+ revalidate по ETag/Last-Modified); офлайн -> кэш
+async function handleHTML(event, req) {
+  const cache = await caches.open(STATIC_CACHE);
+  try {
+    const fresh = await fetch(req, { cache: 'no-cache' });
+    await cache.put(req, fresh.clone());
+    return fresh;
+  } catch (_) {
+    const cached = await cache.match(req);
+    return cached || new Response('<!doctype html><title>offline</title>', { status: 503 });
+  }
+}
+
+// stale-while-revalidate для CSS/JS/другой статики
+async function handleSWR(event, req) {
+  const cache = await caches.open(STATIC_CACHE);
+  const cached = await cache.match(req);
+
+  // Параллельно тянем свежак и обновляем кэш
+  event.waitUntil((async () => {
+    try {
+      const fresh = await fetch(req, { cache: 'no-cache' });
+      if (fresh && (fresh.ok || fresh.status === 304)) {
+        await cache.put(req, fresh.clone());
+      }
+    } catch (_) {}
+  })());
+
+  if (cached) return cached;
+
+  try {
+    const fresh = await fetch(req, { cache: 'no-cache' });
+    await cache.put(req, fresh.clone());
+    return fresh;
+  } catch (_) {
+    return new Response('', { status: 504 });
+  }
+}
+
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   const url = new URL(req.url);
 
-  // 1) Игнорируем всё, что не http/https (chrome-extension:, moz-extension:, data:, chrome:, about:, blob:, ws:, wss:)
-  if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
+  // Работаем только со своим origin (чужие домены — как есть)
+  if (!isSameOrigin(url)) return;
 
-  // 2) Разрешаем кэшировать только same-origin (ресурсы твоего сайта)
-  const sameOrigin = url.origin === self.location.origin;
-
-  const acceptsHTML = (req.headers.get('accept') || '').includes('text/html');
-  const isFont  = req.destination === 'font' || /\.woff2?$/.test(url.pathname);
-  const isStatic = (
-    req.destination === 'style' ||
-    req.destination === 'script' ||
-    req.destination === 'image' ||
-    isFont
-  );
-
-  // Статика: Cache-First (только same-origin)
-  if (isStatic && sameOrigin) {
-    event.respondWith((async () => {
-      const cached = await caches.match(req);
-      if (cached) return cached;
-      try {
-        const res = await fetch(req);
-        // Если ответ ок и same-origin — кладём в кэш
-        if (res && res.ok) {
-          const cache = await caches.open(STATIC_CACHE);
-          await cache.put(req, res.clone());
-        }
-        return res;
-      } catch (_) {
-        return cached || caches.match('index.html');
-      }
-    })());
+  // 1) HTML: network-first
+  if (isHTML(req)) {
+    event.respondWith(handleHTML(event, req));
     return;
   }
 
-  // HTML: Network-First (same-origin), с fallback в кэш
-  if (sameOrigin && (req.mode === 'navigate' || acceptsHTML)) {
-    event.respondWith((async () => {
-      try {
-        const res = await fetch(req);
-        if (res && res.ok) {
-          const cache = await caches.open(STATIC_CACHE);
-          await cache.put(req, res.clone());
-        }
-        return res;
-      } catch (_) {
-        const fallback = await caches.match(req);
-        return fallback || caches.match('index.html');
-      }
-    })());
+  // 2) JS: network-first (видим правки сразу), CSS: SWR (можно оставить)
+if (isJS(url)) {
+  event.respondWith(handleHTML(event, req)); // та же логика, что и для HTML
+  return;
+}
+if (isCSS(url)) {
+  event.respondWith(handleSWR(event, req));  // CSS пусть будет SWR
+  return;
+}
+
+
+  // 3) Остальная статика: stale-while-revalidate
+  if (isStatic(url)) {
+    event.respondWith(handleSWR(event, req));
     return;
   }
 
-  // Всё прочее (включая чужие домены) — не кэшируем, просто проксируем
-  // (это устранит любые ошибки от расширений)
-  // Можно добавить простую стратегию: вернуть из кэша если есть
-  event.respondWith(caches.match(req).then(r => r || fetch(req)));
+  // Остальное — через сеть
 });
