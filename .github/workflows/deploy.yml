@@ -20,24 +20,38 @@ jobs:
         id: meta
         run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
+      - name: Show asset URLs (BEFORE)
+        run: |
+          echo "----- BEFORE index.html -----"
+          grep -nE '(splash\.css|splash\.js|player-core\.bundle\.v3\.3\.js)' index.html || true
+          echo "-----------------------------"
+
       - name: Inject ?v=<build> into asset URLs
         run: |
+          set -e
           B="${{ steps.meta.outputs.SHORT_SHA }}"
+          echo "BUILD ID: $B"
 
-          # 1) если в index.html уже есть ?v=... (включая {{ site.time }}), заменим на хэш
+          # если уже есть ?v=... (включая {{ site.time }}), заменим на хэш
           sed -i -E "s/(splash\.js)\?v=[^\"']+/\1?v=$B/g" index.html || true
           sed -i -E "s/(player-core\.bundle\.v3\.3\.js)\?v=[^\"']+/\1?v=$B/g" index.html || true
           sed -i -E "s/(splash\.css)\?v=[^\"']+/\1?v=$B/g" index.html || true
 
-          # 2) если ?v= не было вовсе — добавим
+          # если ?v= не было вовсе — добавим
           sed -i -E "s/(splash\.js)([\"'])/\1?v=$B\2/g" index.html
           sed -i -E "s/(player-core\.bundle\.v3\.3\.js)([\"'])/\1?v=$B\2/g" index.html
           sed -i -E "s/(splash\.css)([\"'])/\1?v=$B\2/g" index.html
 
-          # (необязательно, но полезно) обновим версию кэша в sw.js, если есть такая константа
+          # (опционально) bump версии кэша в sw.js, если есть CACHE_VERSION
           if grep -q "CACHE_VERSION" sw.js; then
             sed -i -E "s/(CACHE_VERSION\s*=\s*')[^']+(')/\1$B\2/" sw.js
           fi
+
+      - name: Show asset URLs (AFTER)
+        run: |
+          echo "----- AFTER index.html -----"
+          grep -nE '(splash\.css|splash\.js|player-core\.bundle\.v3\.3\.js)' index.html || true
+          echo "----------------------------"
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
