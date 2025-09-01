@@ -19,13 +19,18 @@ jobs:
           lfs: true
           fetch-depth: 0
 
-      - name: Install Git LFS and pull objects
+      - name: Pull LFS objects
         run: |
           git lfs install
-          git lfs fetch --all
-          git lfs checkout   # или: git lfs pull
+          git lfs pull    # или: git lfs fetch --all && git lfs checkout
 
-      # если у тебя нет сборки — просто отгружаем корень
+      # (необязательно, но полезно) посмотреть, что mp3 действительно есть
+      - name: Debug list
+        run: |
+          ls -lah
+          ls -lah media || true
+
+      # 🔴 ВАЖНО: грузим ВЕСЬ корень репо
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
