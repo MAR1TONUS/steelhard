@@ -1,6 +1,11 @@
 (() => {
   const debounce = (fn, ms = 140) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
 
+  // === Новое: запоминаем, что сплэш уже закрывали ===
+  const SEEN_KEY = 'launch_splash_seen_v1';
+  const safeGet = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
+  const safeSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+
   class LaunchSplash extends HTMLElement {
     constructor() {
       super();
@@ -54,6 +59,13 @@
       const launchAtRaw =  this.getAttribute('launch-at');
       const PHASE2_AT   = launchAtRaw ? new Date(launchAtRaw) : null;
 
+      // Если уже видели — сразу показываем приложение и не монтируем сплэш
+      if (safeGet(SEEN_KEY) === '1') {
+        this._revealApp(appSel);
+        this.remove();
+        return;
+      }
+
       this._renderStars(false);
 
       this.$.ttl.textContent = '';
@@ -82,8 +94,9 @@
           this.$.btn.addEventListener('pointercancel', release);
           this.$.btn.addEventListener('pointerleave',  release);
 
-          // Клик: дать кнопке «сыграть», затем скрыть сплэш
+          // Клик: запоминаем факт закрытия, даём кнопке «сыграть», затем скрываем сплэш
           this.$.btn.addEventListener('click', () => {
+            safeSet(SEEN_KEY, '1'); // <<< ключ
             const sheet = this.$.sheet;
             setTimeout(() => {
               sheet.style.transition = `opacity var(--sheet-out-dur) var(--sheet-out-ease), transform var(--sheet-out-dur) var(--sheet-out-ease)`;
@@ -111,7 +124,6 @@
           }
         }, 1000);
       }
-      // === КОНЕЦ правки ===
 
       const reStars = debounce(() => this._renderStars(true), 160);
       window.addEventListener('resize', reStars);
@@ -193,7 +205,7 @@
         const N = Math.round(100 * scale); // примерно 55..150
 
         stars = new Array(N).fill(0).map(() => {
-          const speed = rand(0.15, 0.25) * SPEED_MULT; // можно увеличить верхнюю границу для ещё быстрее
+          const speed = rand(0.15, 0.25) * SPEED_MULT;
           return {
             x: rand(0, w),
             y: rand(0, h),
