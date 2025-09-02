@@ -1,0 +1,116 @@
+/* ===== Portrait layout (clean) ===== */
+
+/* Заголовок трека */
+.title {
+  position: relative;
+  /* Сдвинь при желании – только здесь и только для портрета */
+  top: 24px;
+
+  font-weight: 700;
+  font-size: clamp(18px, 2.4vw, 28px);
+  line-height: 1.12;
+  color: #C4C4C4;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 10%, #000 90%, transparent 100%);
+}
+
+/* Обложка */
+.cover {
+  display: block;
+  margin: 16px auto 32px;
+  width: min(80vw, 360px);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+}
+
+/* Панель управления */
+.controls {
+  position: relative;
+  top: 56px; /* регулируй при необходимости */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+/* Кнопки (не меняем размеры — берём твои переменные/стили из index.html) */
+.btn {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: #2E2833;
+  color: #EAEAEA;
+  box-shadow: 0 8px 24px rgba(0,0,0,.35);
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1), background 220ms cubic-bezier(.2,.8,.2,1), opacity 220ms;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0) scale(.98); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Внутри кнопки — иконка (img/svg). Размеры иконок оставляем как у тебя через переменные */
+#prev  img { width: var(--size-prev)   !important; height: var(--size-prev)   !important; }
+#back15 img { width: var(--size-back15)!important; height: var(--size-back15)!important; }
+.play      { width: var(--btn-play-w); height: var(--btn-play-h); } /* если задаёшь в index.html */
+#fwd30 img { width: var(--size-fwd30) !important; height: var(--size-fwd30) !important; }
+#next  img { width: var(--size-next)  !important; height: var(--size-next)  !important; }
+
+/* Прогресс-бар */
+.progress {
+  position: relative;
+  top: 72px; /* регулируй при необходимости */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Линия */
+.progress .track {
+  position: relative;
+  flex: 1 1 auto;
+  height: var(--progress-height, 6px);
+  background: rgba(255,255,255,.12);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+/* Заполнение (прогресс воспроизведения) */
+.progress .fill {
+  position: absolute;
+  left: 0; top: 0;
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #8A6FE8, #E86FB4);
+  transform-origin: left center;
+}
+
+/* Ползунок */
+.progress .knob {
+  position: absolute;
+  left: 0%; top: 50%;
+  transform: translate(-50%, -50%);
+  width: var(--thumb-size, 14px);
+  height: var(--thumb-size, 14px);
+  border-radius: 999px;
+  background: #EAEAEA;
+  box-shadow: 0 2px 8px rgba(0,0,0,.35);
+  touch-action: none;
+}
+
+/* Время */
+.time {
+  position: relative;
+  top: 80px; /* чтобы подписи располагались ниже прогресса */
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #C4C4C4;
+}
+
+/* Мелкие утилиты */
+img { -webkit-user-drag: none; }

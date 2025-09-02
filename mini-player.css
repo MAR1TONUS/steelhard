@@ -1,0 +1,122 @@
+/* Mini Player (bottom card) — styles */
+/* Tweak these CSS variables to adjust look & feel */
+:root{
+  /* Size & positioning */
+  --mp-max-w: 1000px;     /* max width cap */
+  --mp-side-gap: 7px;     /* page side gaps */
+  --mp-h: 70px;           /* card height */
+  --mp-radius: 16px;      /* card border radius */
+
+  /* Safe-area bottom (iOS/Android overlays, Yandex, etc.) */
+  --mp-safe: env(safe-area-inset-bottom, 0px);
+  --mp-safe-extra: 8px;   /* manual add; JS will adjust for visualViewport if available */
+
+  /* Background colors */
+  --mp-bg:  #5A231A;
+  --mp-bg-2:#6a2c21;      /* slightly lighter for gradient/highlight */
+
+  /* Cover (artwork) */
+  --mp-cover-size: 48px;
+  --mp-cover-radius: 10px;
+  --mp-cover-shift-x: 0px;                  /* X shift (negative=left, positive=right) */
+  --mp-cover-shadow: 0 6px 14px rgba(0,0,0,.35);
+
+  /* Text (title + chapter) */
+  --mp-title-size: 14px;
+  --mp-title-color: #fff;
+  --mp-title-weight: 700;
+
+  --mp-sub-size: 12px;
+  --mp-sub-color: #e8d4cf;
+  --mp-sub-weight: 600;
+
+  --mp-text-gap: 2px;                        /* spacing between title and chapter */
+  --mp-text-shift-x: 0px;                    /* X shift for the whole text block */
+
+  /* Play/Pause button */
+  --mp-btn-size: 38px;
+  --mp-btn-shift-x: 0px;                     /* X shift */
+}
+
+.mini-player{
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(var(--mp-safe) + var(--mp-safe-extra));
+  z-index: 2147483000;
+
+  width: min(var(--mp-max-w), calc(100% - var(--mp-side-gap)*2));
+  min-height: var(--mp-h);
+
+  display: none; /* .show => grid */
+  align-items: center;
+
+  padding: 10px 14px;
+  padding-bottom: calc(10px + var(--mp-safe) + var(--mp-safe-extra));
+
+  background:
+    linear-gradient(180deg, var(--mp-bg-2) 0%, var(--mp-bg) 100%);
+  border-radius: var(--mp-radius);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: 0 10px 28px rgba(0,0,0,.35);
+  backdrop-filter: blur(6px);
+
+  /* grid: [cover] [text] [button] */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 12px;
+
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mini-player.show{ display: grid; }
+.mini-player * { box-sizing: border-box; }
+
+.mp-cover{
+  width: var(--mp-cover-size);
+  height: var(--mp-cover-size);
+  border-radius: var(--mp-cover-radius);
+  box-shadow: var(--mp-cover-shadow);
+  object-fit: cover;
+  justify-self: center;               /* center in its column horizontally */
+  transform: translateX(var(--mp-cover-shift-x));
+  pointer-events: none;               /* clicks bubble to the card */
+  background: #2b2b2b;
+}
+
+.mp-text{
+  min-width: 0;
+  display: flex; flex-direction: column;
+  justify-content: center;
+  gap: var(--mp-text-gap);
+  transform: translateX(var(--mp-text-shift-x)); /* X SHIFT */
+}
+.mp-title, .mp-sub{
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mp-title{
+  font-size: var(--mp-title-size);
+  font-weight: var(--mp-title-weight);
+  color: var(--mp-title-color);
+  text-align: left;
+}
+.mp-sub{
+  font-size: var(--mp-sub-size);
+  font-weight: var(--mp-sub-weight);
+  color: var(--mp-sub-color);
+  text-align: left;
+}
+
+.mp-btn{
+  width: var(--mp-btn-size);
+  height: var(--mp-btn-size);
+  border-radius: 12px;
+  display: grid; place-items: center;
+  background: rgba(0,0,0,.15);
+  border: 1px solid rgba(255,255,255,.08);
+  justify-self: center;               /* center in its column horizontally */
+  transform: translateX(var(--mp-btn-shift-x)); /* X SHIFT */
+  cursor: pointer;
+}
+.mp-btn:active{ transform: translateX(var(--mp-btn-shift-x)) scale(.98); }
+.mp-btn img{ width: 60%; height: 60%; display: block; }
